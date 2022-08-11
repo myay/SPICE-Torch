@@ -15,7 +15,7 @@ template <typename scalar_t>
 __global__ void custommac1d_kernel(
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> weight,
-    torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output
+    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> output
   )
 {
 
@@ -30,23 +30,44 @@ __global__ void custommac1d_kernel(
     // each thread of out calculates a MAC (row of filter times column of input)
 
     // every thread is responsible for one sum, there are as many threads as mac sums in output
-    output[d][c] = 0;
-    float mult_result = 0;
+    // output[d][c] = 0;s
+    // float sub_popcnt = 0; // used for sub-popcount computations
+    int cycle_counter = 0; // nr of ready inputs to majority gate
+    int global_cycles = 0; // counter for all cycles
+    float mac_result = 0;
     for(int i = 0; i < weight.size(1); i++)
     {
-        //printf("Thread: (%d,%d,%d)\nWeight: %.4f, Input: %.4f\n", c, d, e, weight[c][i], input[d][i][e]);
-        mult_result = weight[c][i] * input[d][i];
+      //printf("Thread: (%d,%d,%d)\nWeight: %.4f, Input: %.4f\n", c, d, e, weight[c][i], input[d][i][e]);
+      mac_result += (weight[c][i] * input[d][i]);
+      // output[d][c][] += mult_result;
+      cycle_counter += 1;
 
-        output[d][c] += mult_result;
-        #if 0
-          if (d == 0 && c == 0)
-          {
-            printf("f01: %.2f, f10: %.2f, seed0: %d, cantor_val: %d\n", f01, f10, seed0, cantor_val);
-            //printf("CUDA shape of weight [%d]", weight.size(0));
-            //printf("CUDA shape of input [%d,%d]",  input.size(0), input.size(1));
-            //printf("CUDA shape of output [%d,%d]\n\n", output.size(0), output.size(1));
-          }
-        #endif
+      // when at last element, store mac result
+      if(i == (weight.size(1)-1))
+      {
+        output[d][c][global_cycles] = mac_result;
+        mac_result = 0;
+        cycle_counter = 0;
+        global_cycles += 1;
+      }
+      else if(cycle_counter == 32)
+      {
+        output[d][c][global_cycles] = mac_result;
+        mac_result = 0;
+        cycle_counter = 0;
+        global_cycles += 1;
+      }
+
+
+      #if 0
+        if (d == 0 && c == 0)
+        {
+          printf("f01: %.2f, f10: %.2f, seed0: %d, cantor_val: %d\n", f01, f10, seed0, cantor_val);
+          //printf("CUDA shape of weight [%d]", weight.size(0));
+          //printf("CUDA shape of input [%d,%d]",  input.size(0), input.size(1));
+          //printf("CUDA shape of output [%d,%d]\n\n", output.size(0), output.size(1));
+        }
+      #endif
     }
   }
 }
@@ -80,7 +101,7 @@ torch::Tensor custommac1d_cuda(
     custommac1d_kernel<scalar_t><<<blocks, threads>>>(
         input.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         weight.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-        output.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>()
+        output.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>()
     );
   }));
 

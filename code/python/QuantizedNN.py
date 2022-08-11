@@ -78,6 +78,7 @@ class QuantizedLinear(nn.Linear):
         self.quantize_train = kwargs.pop('quantize_train', True)
         self.quantize_eval = kwargs.pop('quantize_eval', True)
         self.snn_sim = kwargs.pop('snn_sim', None)
+        self.array_size = kwargs.pop('array_size', None)
         self.training = None
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
@@ -93,22 +94,40 @@ class QuantizedLinear(nn.Linear):
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
             if self.snn_sim is not None:
+                # compute weight and input shapes
                 wm_row = quantized_weight.shape[0]
                 wm_col = quantized_weight.shape[1]
                 im_col = input.shape[0]
+                # assign weights and inputs
                 weight_b = quantized_weight
                 input_b = input
-                output_b = torch.zeros(im_col, wm_row).cuda()
+                # size for output buffer
+                buffer_size = int(np.ceil(wm_col/self.array_size))
+                output_b = torch.zeros(im_col, wm_row, buffer_size).cuda()
+                # print("im_col", im_col)
+                # print("bs", buffer_size)
+                print("array_size", self.array_size)
+                # print("b", output_b.shape)
+                # call custom mac
                 custommac1d.custommac1d(input_b, weight_b, output_b)
+                # detach, so that computations are not considered during training
+                # print(output_b.shape)
+                ### --- apply error model to output_b
+                output_b = torch.sum(output_b, 2)
                 output_b = output_b.detach()
+                # execute standard way, to create computation graph for backprop
+                output = F.linear(input, quantized_weight)
+                # replace custom data with standard data, without touching computation graph
+                # output.data.copy_(output_b.data)
                 print("custommac1d")
                 ## check correctness
                 # correct = torch.eq(output_b, output)
-                # correct = (~correct).sum().item()
-                # # 0 if tensors match
-                # print("correctness: ", correct)
-                output = F.linear(input, quantized_weight)
-                output.data.copy_(output_b.data)
+                correct = torch.isclose(output_b, output, atol=1e-3)
+                correct = (~correct).sum().item()
+                # 0 if tensors match
+                print("correctness: ", correct)
+                # print("out_b", output_b)
+                # print("out", output)
             else:
                 output = F.linear(input, quantized_weight)
             return output
