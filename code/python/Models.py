@@ -19,7 +19,7 @@ class FC(nn.Module):
         self.htanh = nn.Hardtanh()
 
         self.flatten = torch.flatten
-        self.fcfc1 = QuantizedLinear(28*28, 2048, quantization=self.quantization, snn_sim=self.snn_sim, array_size=self.array_size, error_model=self.error_model, layerNr=1, bias=False)
+        self.fcfc1 = QuantizedLinear(28*28, 2048, quantization=self.quantization, snn_sim=None, array_size=self.array_size, error_model=self.error_model, layerNr=1, bias=False)
         self.fcbn1 = nn.BatchNorm1d(2048)
         self.fcqact1 = QuantizedActivation(quantization=self.quantization)
 

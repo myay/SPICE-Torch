@@ -110,9 +110,25 @@ class QuantizedLinear(nn.Linear):
                 # print("b", output_b.shape)
                 # call custom mac
                 custommac1d.custommac1d(input_b, weight_b, output_b)
+                # [-32-] [-32-] ... [-5-] ## clock freq: 1ns (also in SPICE)
+                # [-ift-] [-ift-] ... [ift] ## 7.8 ns in SPICE
+                # [-cft-] [-cft-] ... [cft] ## 10 ns in SPICE
+                # [-amac-] [-amac-] ... [-amac-] ## 1/10
+                # 1) nominal input var
+                # 2) input with process variation input
+                # popcount 0
+                # sum
+                # MAPPING: Popcountcount value -> Zyklen -> Approximate MAC Ergebnis
+                # [-1-] # user can use their own mapping popcount -> approx. mac
                 # detach, so that computations are not considered during training
                 # print(output_b.shape)
                 ### --- apply error model to output_b
+                ### --- apply snn simulation
+                # get popcount value (unsigned int, max at self.array_size)
+                output_b_pop = (output_b + self.array_size)/2
+                ###
+                # print("pop scale", output_b_pop)
+                # normal distribution
                 output_b = torch.sum(output_b, 2)
                 output_b = output_b.detach()
                 # execute standard way, to create computation graph for backprop
