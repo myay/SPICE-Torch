@@ -53,8 +53,8 @@ q_train = True # quantization during training
 q_eval = True # quantization during evaluation
 snn_sim = True
 array_size = 16
-mac_mapping = np.load('mapping_example/mapping.npy')
-# print("mapping", mac_mapping)
+mac_mapping = torch.from_numpy(np.load('mapping_example/mapping.npy')).float().cuda()
+print("mapping", mac_mapping)
 
 # python3 run.py --model=FC --dataset=FMNIST --batch-size=256 --epochs=5 --lr=0.001 --step-size=2 --gamma=0.5 --load-model="model_fc_test.pt"
 
@@ -171,7 +171,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    model = nn_model(quantMethod=binarizepm1, snn_sim=snn_sim, array_size=array_size, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
+    model = nn_model(quantMethod=binarizepm1, snn_sim=snn_sim, array_size=array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
     # print(model.name)
     # create experiment folder and file

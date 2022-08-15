@@ -11,7 +11,8 @@
 
 template <typename scalar_t>
 __global__ void mappingdirect_kernel(
-    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> input
+    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> input,
+    torch::PackedTensorAccessor<scalar_t,1,torch::RestrictPtrTraits,size_t> mapping
   ) {
 
   const int c = blockIdx.x * blockDim.x + threadIdx.x;
@@ -20,12 +21,13 @@ __global__ void mappingdirect_kernel(
 
   if ((c < input.size(0)) && (d < input.size(1)) && (e < input.size(2)))
   {
-    input[c][d][e] = input[c][d][e];
+    input[c][d][e] = mapping[int(input[c][d][e])];
   }
 }
 
 torch::Tensor mappingdirect_cuda(
-  torch::Tensor input
+  torch::Tensor input,
+  torch::Tensor mapping
 ) {
 
   int64_t shape_len = input.dim();
@@ -67,7 +69,8 @@ torch::Tensor mappingdirect_cuda(
 
   AT_DISPATCH_ALL_TYPES(input.type(), "mappingdirect_cuda", ([&] {
     mappingdirect_kernel<scalar_t><<<blocks, threads>>>(
-        input.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>()
+        input.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
+        mapping.packed_accessor<scalar_t,1,torch::RestrictPtrTraits,size_t>()
     );
   }));
 

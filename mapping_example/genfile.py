@@ -8,7 +8,7 @@ import numpy as np
 
 ### CASE 1
 array_size = 16
-constant_shift = 2
+constant_shift = 1
 
 # create list
 mapping_list = [i for i in range(0,17)]
@@ -28,7 +28,7 @@ for idx in range(len(mapping_list)):
 print("Clipped mapping", mapping_list)
 
 # convert python array to numpy array
-mapping_list_np = np.array(mapping_list)
+mapping_list_np = np.array(mapping_list, dtype=float)
 
 print("numpy list", mapping_list_np)
 

@@ -113,12 +113,17 @@ class QuantizedLinear(nn.Linear):
                 # call custom mac
                 custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
                 # print("direct")
-                # get popcount value (unsigned int, max at self.array_size)
-                output_b_pop = (output_b + self.array_size)/2
                 # apply mapping
-                mappingdirect.mappingdirect(output_b_pop)
-                # transform back to format that is needed by pytorch
-                output_b = 2*output_b_pop - self.array_size
+                if self.mapping is not None:
+                    # get popcount value (unsigned int, max at self.array_size)
+                    # print("1", output_b)
+                    output_b_pop = (output_b + self.array_size)/2
+                    # print("pop", output_b_pop)
+                    mappingdirect.mappingdirect(output_b_pop, self.mapping)
+                    # print("pop2", output_b_pop)
+                    # transform back to format that is needed by pytorch
+                    output_b = 2*output_b_pop - self.array_size
+                    # print("2", output_b)
 
                 # mappingdirect.mappingdirect(output_b, self.mapping)
                 # [-32-] [-32-] ... [-5-] #
@@ -144,14 +149,15 @@ class QuantizedLinear(nn.Linear):
                 # execute standard way, to create computation graph for backprop
                 output = F.linear(input, quantized_weight)
                 # replace custom data with standard data, without touching computation graph
-                # output.data.copy_(output_b.data)
+                output.data.copy_(output_b.data)
+                # output = output_b
                 # print("custommac1d")
                 # check correctness
                 # correct = torch.eq(output_b, output)
-                correct = torch.isclose(output_b, output, atol=1e-3)
-                correct = (~correct).sum().item()
-                # 0 if tensors match
-                print("correctness: ", correct)
+                # correct = torch.isclose(output_b, output, atol=1e-3)
+                # correct = (~correct).sum().item()
+                # # 0 if tensors match
+                # print("correctness: ", correct)
                 # print("out_b", output_b)
                 # print("out", output)
             else:

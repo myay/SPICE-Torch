@@ -5,14 +5,17 @@
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
 torch::Tensor mappingdirect_cuda(
-    torch::Tensor input
+    torch::Tensor input,
+    torch::Tensor mapping
   );
 
 torch::Tensor mappingdirect(
-    torch::Tensor input
+    torch::Tensor input,
+    torch::Tensor mapping
   ) {
   CHECK_INPUT(input);
-  return mappingdirect_cuda(input);
+  CHECK_INPUT(mapping);
+  return mappingdirect_cuda(input, mapping);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
