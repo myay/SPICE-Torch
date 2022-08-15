@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
+import numpy as np
 import time
 import json
 import sys
@@ -52,6 +53,10 @@ q_train = True # quantization during training
 q_eval = True # quantization during evaluation
 snn_sim = True
 array_size = 16
+mac_mapping = np.load('mapping_example/mapping.npy')
+# print("mapping", mac_mapping)
+
+# python3 run.py --model=FC --dataset=FMNIST --batch-size=256 --epochs=5 --lr=0.001 --step-size=2 --gamma=0.5 --load-model="model_fc_test.pt"
 
 # capacitor model
 # t = - tau * torch.log(1-(a/v_o))
@@ -213,6 +218,9 @@ def main():
         all_accuracies = test_error(model, device, test_loader)
         to_dump_data = dump_exp_data(model, args, all_accuracies)
         store_exp_data(to_dump_path, to_dump_data)
+
+    test(model, device, test_loader)
+
 
 if __name__ == '__main__':
     main()
