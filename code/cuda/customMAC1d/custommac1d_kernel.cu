@@ -31,8 +31,6 @@ __global__ void custommac1d_kernel(
     // each thread of out calculates a MAC (row of filter times column of input)
 
     // every thread is responsible for one sum, there are as many threads as mac sums in output
-    // output[d][c] = 0;s
-    // float sub_popcnt = 0; // used for sub-popcount computations
     int cycle_counter = 0; // nr of ready inputs to majority gate
     int global_cycles = 0; // counter for all cycles
     float mac_result = 0;
@@ -58,17 +56,6 @@ __global__ void custommac1d_kernel(
         cycle_counter = 0;
         global_cycles += 1;
       }
-
-
-      #if 0
-        if (d == 0 && c == 0)
-        {
-          printf("f01: %.2f, f10: %.2f, seed0: %d, cantor_val: %d\n", f01, f10, seed0, cantor_val);
-          //printf("CUDA shape of weight [%d]", weight.size(0));
-          //printf("CUDA shape of input [%d,%d]",  input.size(0), input.size(1));
-          //printf("CUDA shape of output [%d,%d]\n\n", output.size(0), output.size(1));
-        }
-      #endif
     }
   }
 }

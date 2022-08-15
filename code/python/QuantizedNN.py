@@ -6,6 +6,7 @@ from torch.autograd import Function
 import numpy as np
 
 import custommac1d
+import mappingdirect
 
 class Quantize(Function):
     @staticmethod
@@ -79,6 +80,7 @@ class QuantizedLinear(nn.Linear):
         self.quantize_eval = kwargs.pop('quantize_eval', True)
         self.snn_sim = kwargs.pop('snn_sim', None)
         self.array_size = kwargs.pop('array_size', None)
+        self.mapping = kwargs.pop('mac_mapping', None)
         self.training = None
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
@@ -110,6 +112,15 @@ class QuantizedLinear(nn.Linear):
                 # print("b", output_b.shape)
                 # call custom mac
                 custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
+                # print("direct")
+                # get popcount value (unsigned int, max at self.array_size)
+                output_b_pop = (output_b + self.array_size)/2
+                # apply mapping
+                mappingdirect.mappingdirect(output_b_pop)
+                # transform back to format that is needed by pytorch
+                output_b = 2*output_b_pop - self.array_size
+
+                # mappingdirect.mappingdirect(output_b, self.mapping)
                 # [-32-] [-32-] ... [-5-] #
                 # clock freq: 1ns (also in SPICE)
                 # [-ift-] [-ift-] ... [ift] ## 7.8 ns in SPICE
@@ -125,8 +136,6 @@ class QuantizedLinear(nn.Linear):
                 # print(output_b.shape)
                 ### --- apply error model to output_b
                 ### --- apply snn simulation
-                # get popcount value (unsigned int, max at self.array_size)
-                output_b_pop = (output_b + self.array_size)/2
                 ###
                 # print("pop scale", output_b_pop)
                 # normal distribution
@@ -137,12 +146,12 @@ class QuantizedLinear(nn.Linear):
                 # replace custom data with standard data, without touching computation graph
                 # output.data.copy_(output_b.data)
                 # print("custommac1d")
-                ## check correctness
+                # check correctness
                 # correct = torch.eq(output_b, output)
-                # correct = torch.isclose(output_b, output, atol=1e-3)
-                # correct = (~correct).sum().item()
+                correct = torch.isclose(output_b, output, atol=1e-3)
+                correct = (~correct).sum().item()
                 # 0 if tensors match
-                # print("correctness: ", correct)
+                print("correctness: ", correct)
                 # print("out_b", output_b)
                 # print("out", output)
             else:
