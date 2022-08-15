@@ -51,17 +51,7 @@ cel_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_tes
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
 snn_sim = True
-array_size = 32
-v_th = 0.225 # threshold voltage
-c_mem = 0.2*1e-12 # farads (pico here)
-r_l = 100000 # resistor in parallel with capacitor
-f_sample = 5 # nanosecods
-# capacitor size
-# resistor size
-# sampling clock frequency
-# normal distribtion paramters
-tau = r_l * c_mem * 1000 # from pico to nanoseconds
-v_0 = 6 * 1e-3
+array_size = 16
 
 # capacitor model
 # t = - tau * torch.log(1-(a/v_o))

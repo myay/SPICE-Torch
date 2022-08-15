@@ -15,7 +15,8 @@ template <typename scalar_t>
 __global__ void custommac1d_kernel(
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> weight,
-    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> output
+    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> output,
+    int array_size
   )
 {
 
@@ -50,7 +51,7 @@ __global__ void custommac1d_kernel(
         cycle_counter = 0;
         global_cycles += 1;
       }
-      else if(cycle_counter == 32)
+      else if(cycle_counter == array_size)
       {
         output[d][c][global_cycles] = mac_result;
         mac_result = 0;
@@ -75,7 +76,8 @@ __global__ void custommac1d_kernel(
 torch::Tensor custommac1d_cuda(
   torch::Tensor input,
   torch::Tensor weight,
-  torch::Tensor output
+  torch::Tensor output,
+  int array_size
 ) {
   // The number of thread blocks in a grid is usually dictated by the size of the data being processed, which typically exceeds the number of processors in the system.
   // dim3 threadsPerBlock(8,8,8)
@@ -101,7 +103,8 @@ torch::Tensor custommac1d_cuda(
     custommac1d_kernel<scalar_t><<<blocks, threads>>>(
         input.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         weight.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-        output.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>()
+        output.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
+        array_size
     );
   }));
 

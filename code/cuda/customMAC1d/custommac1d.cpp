@@ -5,7 +5,8 @@
 torch::Tensor custommac1d_cuda(
     torch::Tensor input,
     torch::Tensor weight,
-    torch::Tensor output
+    torch::Tensor output,
+    int array_size
   );
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.device().is_cuda(), #x " must be a CUDA tensor")
@@ -15,12 +16,13 @@ torch::Tensor custommac1d_cuda(
 torch::Tensor custommac1d(
     torch::Tensor input,
     torch::Tensor weight,
-    torch::Tensor output
+    torch::Tensor output,
+    int array_size
   ) {
   CHECK_INPUT(input);
   CHECK_INPUT(weight);
   CHECK_INPUT(output);
-  return custommac1d_cuda(input, weight, output);
+  return custommac1d_cuda(input, weight, output, array_size);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {

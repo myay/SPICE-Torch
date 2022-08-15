@@ -106,11 +106,12 @@ class QuantizedLinear(nn.Linear):
                 output_b = torch.zeros(im_col, wm_row, buffer_size).cuda()
                 # print("im_col", im_col)
                 # print("bs", buffer_size)
-                print("array_size", self.array_size)
+                # print("array_size", self.array_size)
                 # print("b", output_b.shape)
                 # call custom mac
-                custommac1d.custommac1d(input_b, weight_b, output_b)
-                # [-32-] [-32-] ... [-5-] ## clock freq: 1ns (also in SPICE)
+                custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
+                # [-32-] [-32-] ... [-5-] #
+                # clock freq: 1ns (also in SPICE)
                 # [-ift-] [-ift-] ... [ift] ## 7.8 ns in SPICE
                 # [-cft-] [-cft-] ... [cft] ## 10 ns in SPICE
                 # [-amac-] [-amac-] ... [-amac-] ## 1/10
@@ -135,13 +136,13 @@ class QuantizedLinear(nn.Linear):
                 output = F.linear(input, quantized_weight)
                 # replace custom data with standard data, without touching computation graph
                 # output.data.copy_(output_b.data)
-                print("custommac1d")
+                # print("custommac1d")
                 ## check correctness
                 # correct = torch.eq(output_b, output)
-                correct = torch.isclose(output_b, output, atol=1e-3)
-                correct = (~correct).sum().item()
+                # correct = torch.isclose(output_b, output, atol=1e-3)
+                # correct = (~correct).sum().item()
                 # 0 if tensors match
-                print("correctness: ", correct)
+                # print("correctness: ", correct)
                 # print("out_b", output_b)
                 # print("out", output)
             else:
