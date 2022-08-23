@@ -6,34 +6,51 @@ import numpy as np
 
 # Case 2) In the case with variation, the mapping for each mac value in "mac -> mac*" consists of parameters (mean and standard deviation) for a normal distribution.
 
-### CASE 1
-array_size = 16
-constant_shift = 1
+manual_mapping = 1
 
-# create list
-mapping_list = [i for i in range(0,17)]
+if manual_mapping is not None:
+    ### CASE 1
 
-print("Standard mapping", mapping_list)
+    # old mapping
+    manual_mapping_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 14, 14, 17, 17, 17, 21, 21, 21, 21, 26, 26, 26, 26, 26, 26, 26, 31, 31, 31]
 
-# shift entries in list
-mapping_list = [(i+constant_shift) for i in mapping_list]
+    # new mapping
+    # manual_mapping_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 28, 30, 30, 32, 32]
 
-print("Shifted mapping", mapping_list)
+    mapping_list_np = np.array(manual_mapping_list, dtype=float)
 
-# clip values to largest
-for idx in range(len(mapping_list)):
-    if mapping_list[idx] > array_size:
-        mapping_list[idx] = array_size
+    print("numpy list", mapping_list_np)
 
-print("Clipped mapping", mapping_list)
+    # save mapping as "mapping.npy"
+    with open('mapping.npy', 'wb') as mp:
+        np.save(mp, mapping_list_np)
+else:
+    array_size = 24
+    constant_shift = 1
+    # create list
+    mapping_list = [i for i in range(0,array_size+1)]
 
-# convert python array to numpy array
-mapping_list_np = np.array(mapping_list, dtype=float)
+    print("Standard mapping", mapping_list)
 
-print("numpy list", mapping_list_np)
+    # shift entries in list
+    mapping_list = [(i+constant_shift) for i in mapping_list]
 
-# save mapping as "mapping.npy"
-with open('mapping.npy', 'wb') as mp:
-    np.save(mp, mapping_list_np)
+    print("Shifted mapping", mapping_list)
 
-### CASE 2
+    # clip values to largest
+    for idx in range(len(mapping_list)):
+        if mapping_list[idx] > array_size:
+            mapping_list[idx] = array_size
+
+    print("Clipped mapping", mapping_list)
+
+    # convert python array to numpy array
+    mapping_list_np = np.array(mapping_list, dtype=float)
+
+    print("numpy list", mapping_list_np)
+
+    # save mapping as "mapping.npy"
+    with open('mapping.npy', 'wb') as mp:
+        np.save(mp, mapping_list_np)
+
+    ### CASE 2

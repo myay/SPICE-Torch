@@ -78,7 +78,7 @@ class QuantizedLinear(nn.Linear):
         self.error_model = kwargs.pop('error_model', None)
         self.quantize_train = kwargs.pop('quantize_train', True)
         self.quantize_eval = kwargs.pop('quantize_eval', True)
-        self.snn_sim = kwargs.pop('snn_sim', None)
+        self.an_sim = kwargs.pop('an_sim', None)
         self.array_size = kwargs.pop('array_size', None)
         self.mapping = kwargs.pop('mac_mapping', None)
         self.training = None
@@ -95,7 +95,7 @@ class QuantizedLinear(nn.Linear):
                 quantized_weight = self.weight
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
-            if self.snn_sim is not None:
+            if self.an_sim is not None:
                 # compute weight and input shapes
                 wm_row = quantized_weight.shape[0]
                 wm_col = quantized_weight.shape[1]
@@ -188,6 +188,9 @@ class QuantizedConv2d(nn.Conv2d):
         self.error_model = kwargs.pop('error_model', None)
         self.quantize_train = kwargs.pop('quantize_train', True)
         self.quantize_eval = kwargs.pop('quantize_eval', True)
+        self.an_sim = kwargs.pop('an_sim', None)
+        self.array_size = kwargs.pop('array_size', None)
+        self.mapping = kwargs.pop('mac_mapping', None)
         self.training = None
         super(QuantizedConv2d, self).__init__(*args, **kwargs)
 
@@ -222,6 +225,8 @@ class QuantizedConv2d(nn.Conv2d):
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
                 quantized_bias = apply_error_model(quantized_bias, self.error_model)
+            if self.an_sim is not None:
+                print("executing an sim for conv")
             # compute regular 2d conv
             output = F.conv2d(input, quantized_weight, quantized_bias, self.stride,
                               self.padding, self.dilation, self.groups)

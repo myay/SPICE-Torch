@@ -51,8 +51,8 @@ cel_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_tes
 
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
-snn_sim = True
-array_size = 16
+an_sim = None
+array_size = 32
 mac_mapping = torch.from_numpy(np.load('mapping_example/mapping.npy')).float().cuda()
 print("mapping", mac_mapping)
 
@@ -171,7 +171,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    model = nn_model(quantMethod=binarizepm1, snn_sim=snn_sim, array_size=array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
+    model = nn_model(quantMethod=binarizepm1, an_sim=an_sim, array_size=array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
     # print(model.name)
     # create experiment folder and file
