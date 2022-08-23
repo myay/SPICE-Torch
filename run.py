@@ -51,7 +51,7 @@ cel_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_tes
 
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
-an_sim = None
+an_sim = True
 array_size = 32
 mac_mapping = torch.from_numpy(np.load('mapping_example/mapping.npy')).float().cuda()
 print("mapping", mac_mapping)

@@ -6,6 +6,7 @@ from torch.autograd import Function
 import numpy as np
 
 import custommac1d
+# import custommac2d
 import mappingdirect
 
 class Quantize(Function):
@@ -206,8 +207,39 @@ class QuantizedConv2d(nn.Conv2d):
                 quantized_bias = self.bias
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
+            if self.an_sim is not None:
+                print("executing an sim for conv")
+
+                # get tensor sizes
+                h = input.shape[2]
+                w = input.shape[3]
+                kh = self.kernel_size[0]
+                kw = self.kernel_size[1] # kernel size
+                dh = self.stride[0]
+                dw = self.stride[1] # stride
+                size = int((h-kh+2*0)/dh+1)
+
+                 # unfold input
+                input_b = F.unfold(input, kernel_size=self.kernel_size, padding=self.padding, stride=self.stride).cuda()
+                # unfold kernels
+                weight_b = quantized_weight.view(self.out_channels,-1).cuda()
+
+                # nr of neurons
+                wm_row = weight_b.shape[0]
+                # nr of weights
+                wm_col = weight_b.shape[1]
+                # nr of columns in image
+                im_col = input_b.shape[2]
+
+                # size for output buffer
+                buffer_size = int(np.ceil(wm_col/self.array_size))
+
+                output_b = torch.zeros(input_b.shape[0], wm_row, im_col, buffer_size).cuda()
+                # print("b size", output_b.shape)
+                # custommac2d.custommac2d(input_b, weight_b, output_b, self.array_size)
             output = F.conv2d(input, quantized_weight, self.bias, self.stride,
                               self.padding, self.dilation, self.groups)
+            # print("o size", output.shape)
             return output
         else:
             quantized_weight = None
@@ -225,8 +257,6 @@ class QuantizedConv2d(nn.Conv2d):
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
                 quantized_bias = apply_error_model(quantized_bias, self.error_model)
-            if self.an_sim is not None:
-                print("executing an sim for conv")
             # compute regular 2d conv
             output = F.conv2d(input, quantized_weight, quantized_bias, self.stride,
                               self.padding, self.dilation, self.groups)
