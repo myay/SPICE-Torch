@@ -1,5 +1,5 @@
 # AnaTorch
-A framework for error model application for error tolerance training and evaluation of Binarized/Quantized Neural Networks
+A framework for connecting SPICE simulations of analog computing neuron circuits with PyTorch accuracy evaluations for Binarized/Quantized Neural Networks.
 
 Tested setups:
 - Python 3.6.9, PyTorch 1.5.0, GeForce GTX 1060 6GB (Driver Version: 440.100, CUDA Version: 10.2)
