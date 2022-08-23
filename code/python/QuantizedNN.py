@@ -6,7 +6,7 @@ from torch.autograd import Function
 import numpy as np
 
 import custommac1d
-# import custommac2d
+import custommac2d
 import mappingdirect
 
 class Quantize(Function):
@@ -208,8 +208,6 @@ class QuantizedConv2d(nn.Conv2d):
             if self.error_model is not None:
                 quantized_weight = apply_error_model(quantized_weight, self.error_model)
             if self.an_sim is not None:
-                print("executing an sim for conv")
-
                 # get tensor sizes
                 h = input.shape[2]
                 w = input.shape[3]
@@ -236,10 +234,28 @@ class QuantizedConv2d(nn.Conv2d):
 
                 output_b = torch.zeros(input_b.shape[0], wm_row, im_col, buffer_size).cuda()
                 # print("b size", output_b.shape)
-                # custommac2d.custommac2d(input_b, weight_b, output_b, self.array_size)
-            output = F.conv2d(input, quantized_weight, self.bias, self.stride,
+                print("executing an sim for conv")
+                custommac2d.custommac2d(input_b, weight_b, output_b, self.array_size)
+                output_b = torch.sum(output_b, 3)
+                # create the view that PyTorch expects
+                output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                output_b = output_b.detach()
+
+                # execute standard way, to create computation graph for backprop
+                output = F.conv2d(input, quantized_weight, self.bias, self.stride,
                               self.padding, self.dilation, self.groups)
-            # print("o size", output.shape)
+                output.data.copy_(output_b.data)
+                # check correctness
+                correct = torch.eq(output_b, output)
+                correct = torch.isclose(output_b, output, atol=1e-3)
+                correct = (~correct).sum().item()
+                # 0 if tensors match
+                print("correctness: ", correct)
+                # print("out_b", output_b)
+                # print("out", output)
+            else:
+                output = F.conv2d(input, quantized_weight, self.bias, self.stride,
+                              self.padding, self.dilation, self.groups)
             return output
         else:
             quantized_weight = None
