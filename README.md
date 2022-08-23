@@ -35,6 +35,9 @@ Here is a list of the command line parameters for running the error evaluations 
 | :------------- |:-------------|
 | --model      | FC, VGG3, VGG7 |
 | --dataset      | MNIST, FMNIST, QMNIST, SVHN, CIFAR10 |
+| --an-sim      | int, whether to turn on the mapping from SPICE, default: None |
+| --mapping      | string, loads a mapping from the specified path |
+| --array-size      | int, specifies the size of the crossbar array |
 | --train-model      | bool, whether to train a model, default: None|
 | --epochs      | int, number of epochs to train, default: 10|
 | --lr      | float, learning rate, default: 1.0|
@@ -43,8 +46,8 @@ Here is a list of the command line parameters for running the error evaluations 
 | --batch-size      | int, specifies the batch size in training, default: 64|
 | --test-batch-size      | int, specifies the batch size in testing, default: 1000|
 | --save-model | string, saves a trained model with the specified name in the string, default:None |
-| --load-model-path | string, loads a model from the speficied path in the string, default: None |
-| --gpu-num | String, specifies the GPU on which the training should be performed, default: 0 |
+| --load-model-path | string, loads a model from the specified path in the string, default: None |
+| --gpu-num | string, specifies the GPU on which the training should be performed, default: 0 |
 
 More information on the command line parameters can be found [here](https://github.com/myay/IFneuronSPICE/blob/main/code/python/Utils.py#L55).
 
