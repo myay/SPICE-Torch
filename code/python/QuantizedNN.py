@@ -234,7 +234,7 @@ class QuantizedConv2d(nn.Conv2d):
 
                 output_b = torch.zeros(input_b.shape[0], wm_row, im_col, buffer_size).cuda()
                 # print("b size", output_b.shape)
-                print("executing an sim for conv")
+                # print("executing an sim for conv")
                 custommac2d.custommac2d(input_b, weight_b, output_b, self.array_size)
                 # print(output_b)
                 if self.mapping is not None:
