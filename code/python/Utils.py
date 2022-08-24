@@ -121,6 +121,8 @@ def parse_args(parser):
                         help='how many batches to wait before logging training status')
     parser.add_argument('--save-model', type=str, default=None,
                         help='Specify name for saving model')
+    parser.add_argument('--save-training-state', type=str, default=None,
+                        help='Specify path for saving the training state')                    
     parser.add_argument('--an-sim', type=int, default=None, help='Whether to turn on the mapping based on SPICE')
     parser.add_argument('--mapping', type=str, default=None,
                         help='Specify the mapping to import')

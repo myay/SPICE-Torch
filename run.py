@@ -142,6 +142,15 @@ def main():
     if args.save_model is not None:
         torch.save(model.state_dict(), "model_{}.pt".format(args.save_model))
 
+    if args.save_training_state is not None:
+        path = "model_checkpoint_{}.pt".format(args.save_training_state)
+
+        torch.save({
+        'epoch': args.epochs,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        }, path)
+
     # load model
     if args.load_model_path is not None:
             to_load = args.load_model_path
