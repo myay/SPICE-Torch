@@ -1,4 +1,4 @@
-# AnaTorch
+# AnTorch
 A framework for connecting SPICE simulations of analog computing neuron circuits with PyTorch accuracy evaluations for Binarized/Quantized Neural Networks.
 
 Tested setups:
