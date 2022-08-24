@@ -46,10 +46,10 @@ class Quantization1:
 binarizepm1 = Quantization1(binarizePM1.binarize)
 binarizepm1fi = SymmetricBitErrorsBinarizedPM1(binarizePM1FI.binarizeFI, 0.1)
 
-crit_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
-crit_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
-# crit_train = Criterion(binary_hingeloss, "MHL_train", param=128)
-# crit_test = Criterion(binary_hingeloss, "MHL_test", param=128)
+# crit_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
+# crit_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
+crit_train = Criterion(binary_hingeloss, "MHL_train", param=128)
+crit_test = Criterion(binary_hingeloss, "MHL_test", param=128)
 
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
