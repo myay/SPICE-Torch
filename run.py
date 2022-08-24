@@ -14,13 +14,13 @@ import os
 from datetime import datetime
 sys.path.append("code/python/")
 
-from Utils import Scale, Clippy, set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, Criterion, binary_hingeloss
+from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
 from Models import FC, VGG3, VGG7
 
-from Traintest_Utils import train, test, test_error
+from Traintest_Utils import train, test, test_error, Scale, Clippy,  Criterion, binary_hingeloss
 
 import binarizePM1
 import binarizePM1FI

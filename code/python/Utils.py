@@ -7,43 +7,6 @@ import json
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
-def binary_hingeloss(yhat, y, b=128):
-    #print("yhat", yhat.mean(dim=1))
-    #print("y", y)
-    # print("BINHINGE")
-    y_enc = 2 * torch.nn.functional.one_hot(y, yhat.shape[-1]) - 1.0
-    #print("y_enc", y_enc)
-    l = (b - y_enc * yhat).clamp(min=0)
-    #print(l)
-    return l.mean(dim=1) / b
-
-class Scale(nn.Module):
-    def __init__(self, init_value=1e-3):
-        super().__init__()
-        self.scale = nn.Parameter(torch.FloatTensor([init_value]))
-
-    def forward(self, input):
-        return input * self.scale
-
-class Clippy(torch.optim.Adam):
-    def step(self, closure=None):
-        loss = super(Clippy, self).step(closure=closure)
-        for group in self.param_groups:
-            for p in group['params']:
-                p.data.clamp(-1,1)
-        return loss
-
-class Criterion:
-    def __init__(self, method, name, param=None):
-        self.method = method
-        self.param = param
-        self.name = name
-    def applyCriterion(self, output, target):
-        if self.param is not None:
-            return self.method(output, target, self.param)
-        else:
-            return self.method(output, target)
-
 def set_layer_mode(model, mode):
     for layer in model.children():
         if isinstance(layer, (QuantizedActivation, QuantizedLinear, QuantizedConv2d)):
@@ -82,7 +45,7 @@ def parse_args(parser):
                         help='how many batches to wait before logging training status')
     parser.add_argument('--save-model', type=str, default=None,
                         help='Specify name for saving model')
-    parser.add_argument('--an-sim', type=int, default=None, help='Whether to turn on the mapping based on SPICE')                    
+    parser.add_argument('--an-sim', type=int, default=None, help='Whether to turn on the mapping based on SPICE')
     parser.add_argument('--mapping', type=str, default=None,
                         help='Specify the mapping to import')
     parser.add_argument('--array-size', type=int, default=32, help='Specify the array size')

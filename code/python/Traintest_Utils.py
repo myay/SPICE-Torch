@@ -13,15 +13,50 @@ import os
 from datetime import datetime
 sys.path.append("code/python/")
 
-from Utils import Scale, Clippy, set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, Criterion, binary_hingeloss
+from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
-
-from Models import VGG3
 
 import binarizePM1
 import binarizePM1FI
 import quantization
+
+def binary_hingeloss(yhat, y, b=128):
+    #print("yhat", yhat.mean(dim=1))
+    #print("y", y)
+    # print("BINHINGE")
+    y_enc = 2 * torch.nn.functional.one_hot(y, yhat.shape[-1]) - 1.0
+    #print("y_enc", y_enc)
+    l = (b - y_enc * yhat).clamp(min=0)
+    #print(l)
+    return l.mean(dim=1) / b
+
+class Scale(nn.Module):
+    def __init__(self, init_value=1e-3):
+        super().__init__()
+        self.scale = nn.Parameter(torch.FloatTensor([init_value]))
+
+    def forward(self, input):
+        return input * self.scale
+
+class Clippy(torch.optim.Adam):
+    def step(self, closure=None):
+        loss = super(Clippy, self).step(closure=closure)
+        for group in self.param_groups:
+            for p in group['params']:
+                p.data.clamp(-1,1)
+        return loss
+
+class Criterion:
+    def __init__(self, method, name, param=None):
+        self.method = method
+        self.param = param
+        self.name = name
+    def applyCriterion(self, output, target):
+        if self.param is not None:
+            return self.method(output, target, self.param)
+        else:
+            return self.method(output, target)
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()

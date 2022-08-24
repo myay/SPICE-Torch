@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
-from Utils import Scale, Clippy
+from Traintest_Utils import Scale, Clippy
 
 class FC(nn.Module):
     def __init__(self, quantMethod=None, an_sim=None, array_size=None, mapping=None, quantize_train=True, quantize_eval=True, error_model=None):
