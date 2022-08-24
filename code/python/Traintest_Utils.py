@@ -59,8 +59,8 @@ def train(args, model, device, train_loader, optimizer, epoch):
         optimizer.zero_grad()
         output = model(data)
         # loss = F.nll_loss(output, target)
-        criterion = nn.CrossEntropyLoss(reduction="none")
-        loss = criterion(output, target).mean()
+        # criterion = nn.CrossEntropyLoss(reduction="none")
+        loss = model.traincriterion.applyCriterion(output, target).mean()
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
@@ -77,12 +77,12 @@ def test(model, device, test_loader, pr=1):
 
     test_loss = 0
     correct = 0
-    criterion = nn.CrossEntropyLoss(reduction="sum")
+    # criterion = nn.CrossEntropyLoss(reduction="sum")
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += criterion(output, target).item()  # sum up batch loss
+            test_loss += model.testcriterion.applyCriterion(output, target).mean()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 

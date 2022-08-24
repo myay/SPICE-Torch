@@ -12,19 +12,19 @@ from Models import FC, VGG3, VGG7
 
 def get_model_and_datasets(args):
     nn_model = None
-    model = None
+    # model = None
     dataset1 = None
     dataset2 = None
 
     if args.model == "FC":
         nn_model = FC
-        model = nn_model().cuda()
+        # model = nn_model().cuda()
     if args.model == "VGG3":
         nn_model = VGG3
-        model = nn_model().cuda()
+        # model = nn_model().cuda()
     if args.model == "VGG7":
         nn_model = VGG7
-        model = nn_model().cuda()
+        # model = nn_model().cuda()
 
     if args.dataset == "MNIST":
         transform=transforms.Compose([

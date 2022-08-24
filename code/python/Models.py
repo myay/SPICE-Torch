@@ -13,9 +13,11 @@ class Scale(nn.Module):
         return input * self.scale
 
 class FC(nn.Module):
-    def __init__(self, quantMethod=None, an_sim=None, array_size=None, mapping=None, quantize_train=True, quantize_eval=True, error_model=None):
+    def __init__(self, train_crit, test_crit, quantMethod=None, an_sim=None, array_size=None, mapping=None, quantize_train=True, quantize_eval=True, error_model=None):
         super(FC, self).__init__()
         self.name = "FC"
+        self.traincriterion = train_crit
+        self.testcriterion = test_crit
         self.quantization = quantMethod
         self.q_train = quantize_train
         self.q_test = quantize_eval

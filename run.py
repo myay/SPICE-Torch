@@ -46,14 +46,15 @@ class Quantization1:
 binarizepm1 = Quantization1(binarizePM1.binarize)
 binarizepm1fi = SymmetricBitErrorsBinarizedPM1(binarizePM1FI.binarizeFI, 0.1)
 
-cel_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
-cel_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
+crit_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
+crit_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
+# crit_train = Criterion(binary_hingeloss, "MHL_train", param=128)
+# crit_test = Criterion(binary_hingeloss, "MHL_test", param=128)
 
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
-# an_sim = True
 
-# python3 run.py --model=FC --dataset=FMNIST --batch-size=256 --epochs=5 --lr=0.001 --step-size=2 --gamma=0.5 --load-model="model_fc_test.pt"
+#python3 run.py --model=FC --dataset=FMNIST --load-model="model_fc_test.pt" --mapping=mapping_example/mapping.npy --array-size=32 --an-sim=1
 
 # capacitor model
 # t = - tau * torch.log(1-(a/v_o))
@@ -104,7 +105,7 @@ def main():
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
         print("mapping", mac_mapping)
 
-    model = nn_model(quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
+    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
     # print(model.name)
     # create experiment folder and file
