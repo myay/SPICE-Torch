@@ -4,7 +4,13 @@ import torch.nn.functional as F
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
-from Traintest_Utils import Scale, Clippy
+class Scale(nn.Module):
+    def __init__(self, init_value=1e-3):
+        super().__init__()
+        self.scale = nn.Parameter(torch.FloatTensor([init_value]))
+
+    def forward(self, input):
+        return input * self.scale
 
 class FC(nn.Module):
     def __init__(self, quantMethod=None, an_sim=None, array_size=None, mapping=None, quantize_train=True, quantize_eval=True, error_model=None):

@@ -31,14 +31,6 @@ def binary_hingeloss(yhat, y, b=128):
     #print(l)
     return l.mean(dim=1) / b
 
-class Scale(nn.Module):
-    def __init__(self, init_value=1e-3):
-        super().__init__()
-        self.scale = nn.Parameter(torch.FloatTensor([init_value]))
-
-    def forward(self, input):
-        return input * self.scale
-
 class Clippy(torch.optim.Adam):
     def step(self, closure=None):
         loss = super(Clippy, self).step(closure=closure)

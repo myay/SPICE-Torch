@@ -14,13 +14,13 @@ import os
 from datetime import datetime
 sys.path.append("code/python/")
 
-from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data
+from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, get_model_and_datasets
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
 from Models import FC, VGG3, VGG7
 
-from Traintest_Utils import train, test, test_error, Scale, Clippy,  Criterion, binary_hingeloss
+from Traintest_Utils import train, test, test_error, Clippy, Criterion, binary_hingeloss
 
 import binarizePM1
 import binarizePM1FI
@@ -94,76 +94,7 @@ def main():
         train_kwargs.update(cuda_kwargs)
         test_kwargs.update(cuda_kwargs)
 
-    nn_model = None
-    model = None
-    dataset1 = None
-    dataset2 = None
-
-    if args.model == "FC":
-        nn_model = FC
-        model = nn_model().cuda()
-    if args.model == "VGG3":
-        nn_model = VGG3
-        model = nn_model().cuda()
-    if args.model == "VGG7":
-        nn_model = VGG7
-        model = nn_model().cuda()
-
-    if args.dataset == "MNIST":
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            ])
-        dataset1 = datasets.MNIST('data', train=True, download=True, transform=transform)
-        dataset2 = datasets.MNIST('data', train=False, transform=transform)
-
-    if args.dataset == "FMNIST":
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            ])
-        dataset1 = datasets.FashionMNIST('data', train=True, download=True, transform=transform)
-        dataset2 = datasets.FashionMNIST('data', train=False, transform=transform)
-
-    if args.dataset == "KMNIST":
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            ])
-        dataset1 = datasets.KMNIST(root="data/KMNIST/", train=True, download=True, transform=transform)
-        dataset2 = datasets.KMNIST('data/KMNIST/', train=False, download=True, transform=transform)
-
-    if args.dataset == "SVHN":
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            ])
-        dataset1 = datasets.SVHN(root="data/SVHN/", split="train", download=True, transform=transform)
-        dataset2 = datasets.SVHN(root="data/SVHN/", split="test", download=True, transform=transform)
-
-    if args.dataset == "CIFAR10":
-        transform_train=transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
-        transform_test=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
-        dataset1 = datasets.CIFAR10('data', train=True, download=True, transform=transform_train)
-        dataset2 = datasets.CIFAR10('data', train=False, transform=transform_test)
-
-    if args.dataset == "CIFAR100":
-        transform_train=transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
-        transform_test=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
-        dataset1 = datasets.CIFAR100('data', train=True, download=True, transform=transform_train)
-        dataset2 = datasets.CIFAR100('data', train=False, transform=transform_test)
+    nn_model, dataset1, dataset2 = get_model_and_datasets(args)
 
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
