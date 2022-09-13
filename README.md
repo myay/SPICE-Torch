@@ -1,4 +1,4 @@
-# AnTorch
+# SPICE-Torch
 A framework for connecting SPICE simulations of analog computing neuron circuits with PyTorch accuracy evaluations for Binarized/Quantized Neural Networks.
 
 Tested setups:
@@ -28,9 +28,9 @@ Then, to install the CUDA-kernels, go to the folder ```code/cuda/``` and run
 
 After successful installation of all kernels, run the binarization/quantization-aware training with error injection for BNNs using
 
-```python3 run.py --model=VGG3 --dataset=FMNIST --batch-size=256 --epochs=5 --lr=0.001 --step-size=2 --gamma=0.5 --train-model=1 --store-model="vgg3_test"```.
+```python3 run.py --model=VGG3 --dataset=FMNIST --batch-size=256 --epochs=5 --lr=0.001 --step-size=2 --gamma=0.5 --train-model=1 --save-model=vgg3_test```.
 
-Here is a list of the command line parameters for running the error evaluations with AnaTorch:
+Here is a list of the command line parameters for running the error evaluations with SPICE-Torch:
 | Command line parameter | Options |
 | :------------- |:-------------|
 | --model      | FC, VGG3, VGG7 |
@@ -47,7 +47,9 @@ Here is a list of the command line parameters for running the error evaluations 
 | --test-batch-size      | int, specifies the batch size in testing, default: 1000|
 | --save-model | string, saves a trained model with the specified name in the string, default:None |
 | --load-model-path | string, loads a model from the specified path in the string, default: None |
-| --gpu-num | string, specifies the GPU on which the training should be performed, default: 0 |
+| --load-training-state | string, saves a training state with the specified name in the string, default:None |
+| --save-trainig-state | string, loads a training state from the specified path in the string, default: None |
+| --gpu-num | int, specifies the GPU on which the training should be performed, default: 0 |
 
 More information on the command line parameters can be found [here](https://github.com/myay/IFneuronSPICE/blob/main/code/python/Utils.py#L55).
 

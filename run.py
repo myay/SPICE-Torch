@@ -107,16 +107,24 @@ def main():
 
     model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
+    # optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = Clippy(model.parameters(), lr=args.lr)
+
+    scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
+
+    # load training state or create new model
+    if args.load_training_state is not None:
+        print("Loaded training state: ", args.load_training_state)
+        checkpoint = torch.load(args.load_training_state)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        # epoch = checkpoint['epoch']
+
     # print(model.name)
     # create experiment folder and file
     to_dump_path = create_exp_folder(model)
     if not os.path.exists(to_dump_path):
         open(to_dump_path, 'w').close()
-
-    # optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    optimizer = Clippy(model.parameters(), lr=args.lr)
-
-    scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
     if args.train_model is not None:
         time_elapsed = 0
