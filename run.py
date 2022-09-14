@@ -103,7 +103,7 @@ def main():
     mac_mapping = None
     if args.mapping is not None:
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
-        print("mapping", mac_mapping)
+        # print("mapping", mac_mapping)
 
     model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
