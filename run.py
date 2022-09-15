@@ -106,7 +106,8 @@ def main():
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
         # print("mapping", mac_mapping)
     if args.mapping_distr is not None:
-        mac_mapping_distr = 1# TODO: torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
+        mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
+        print("Mapping from distr: ", mac_mapping_distr)
 
     model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 

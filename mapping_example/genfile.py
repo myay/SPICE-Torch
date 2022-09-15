@@ -9,9 +9,30 @@ import csv
 manual_mapping = None
 load_mapping_csv = 1
 load_mapping_path = "32bit_high_res_mappings.csv"
+mapping_distr = "32_bit_variation/adc_model_prec_"
 
-
-if load_mapping_csv is not None:
+if mapping_distr is not None:
+    print("Loading distribution-based mapping from CSV")
+    # iterate over all confusion matrices
+    for i in range(2,33):
+        # generate all file names
+        list_temp = []
+        mapping_to_load = mapping_distr + str(i)
+        mapping_to_load += ".csv"
+        with open(mapping_to_load, newline='') as csvfile:
+            csv_loaded = csv.reader(csvfile, delimiter=',')
+            for idx, row in enumerate(csv_loaded):
+                if idx != 0:
+                    row_map_np = np.array(row[1:], dtype=float)
+                    list_temp.append(row_map_np)
+            # create first row with entry 1 at index 0 and value 0 for all other indices
+            list_temp_np = np.array(list_temp, dtype=float)
+            to_ins = np.array([0 for i in range(0,list_temp_np[0].size)], dtype=float)
+            to_ins[0] = 1
+            list_temp_np = np.insert(list_temp_np, 0, to_ins, axis=0)
+            with open('mapping_cm_{}.npy'.format(i), 'wb') as mp:
+                np.save(mp, list_temp_np)
+elif load_mapping_csv is not None:
     print("Load from CSV")
     # read csv file
     with open(load_mapping_path, newline='') as csvfile:
