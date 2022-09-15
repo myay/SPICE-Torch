@@ -82,6 +82,7 @@ class QuantizedLinear(nn.Linear):
         self.an_sim = kwargs.pop('an_sim', None)
         self.array_size = kwargs.pop('array_size', None)
         self.mapping = kwargs.pop('mac_mapping', None)
+        self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
         self.training = None
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
@@ -125,6 +126,13 @@ class QuantizedLinear(nn.Linear):
                     # transform back to format that is needed by pytorch
                     output_b = 2*output_b_pop - self.array_size
                     # print("2", output_b)
+
+                if self.mapping_distr is not None:
+                    print("in mapping_distr")
+                    output_b_pop = output_b
+                    # output_b_pop = (output_b + self.array_size)/2
+                    # mappingdistr.mappingdistr(output_b_pop, self.mapping_distr)
+                    # output_b = 2*output_b_pop - self.array_size
 
                 # mappingdirect.mappingdirect(output_b, self.mapping)
                 # [-32-] [-32-] ... [-5-] #

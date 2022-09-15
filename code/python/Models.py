@@ -56,7 +56,7 @@ class FC(nn.Module):
         return x
 
 class VGG3(nn.Module):
-    def __init__(self, train_crit, test_crit, quantMethod=None, an_sim=None, array_size=None, mapping=None, quantize_train=True, quantize_eval=True, error_model=None):
+    def __init__(self, train_crit, test_crit, quantMethod=None, an_sim=None, array_size=None, mapping=None, mapping_distr=None, quantize_train=True, quantize_eval=True, error_model=None):
         super(VGG3, self).__init__()
         self.name = "VGG3"
         self.traincriterion = train_crit
@@ -68,6 +68,7 @@ class VGG3(nn.Module):
         self.an_sim = an_sim
         self.array_size = array_size
         self.mapping = mapping
+        self.mapping_distr = mapping_distr
         self.htanh = nn.Hardtanh()
 
         self.conv1 = QuantizedConv2d(1, 64, kernel_size=3, padding=1, stride=1, quantization=self.quantization, error_model=self.error_model, bias=False)
@@ -78,7 +79,7 @@ class VGG3(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.qact2 = QuantizedActivation(quantization=self.quantization)
 
-        self.fc1 = QuantizedLinear(7*7*64, 2048, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, error_model=self.error_model, bias=False)
+        self.fc1 = QuantizedLinear(7*7*64, 2048, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, error_model=self.error_model, bias=False)
         self.bn3 = nn.BatchNorm1d(2048)
         self.qact3 = QuantizedActivation(quantization=self.quantization)
 

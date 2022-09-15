@@ -127,7 +127,9 @@ def parse_args(parser):
                         help='Specify path for saving the training state')
     parser.add_argument('--an-sim', type=int, default=None, help='Whether to turn on the mapping based on SPICE')
     parser.add_argument('--mapping', type=str, default=None,
-                        help='Specify the mapping to import')
+                        help='Specify the direct mapping to import')
+    parser.add_argument('--mapping-distr', type=str, default=None,
+                        help='Specify the distribution-based mapping to import')
     parser.add_argument('--array-size', type=int, default=32, help='Specify the array size')
     parser.add_argument('--test-error', type=int, default=None, help='Whether to test the model')
 

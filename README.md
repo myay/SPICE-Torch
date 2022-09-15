@@ -15,6 +15,7 @@ Supported features:
 
 TODOs:
 - Distribution-based mapping
+- Performance mode (fuse MAC engine with error application into one GPU-kernel)
 - Support for QNNs
 - Larger NN models
 
@@ -36,7 +37,8 @@ Here is a list of the command line parameters for running the error evaluations 
 | --model      | FC, VGG3, VGG7 |
 | --dataset      | MNIST, FMNIST, QMNIST, SVHN, CIFAR10 |
 | --an-sim      | int, whether to turn on the mapping from SPICE, default: None |
-| --mapping      | string, loads a mapping from the specified path |
+| --mapping      | string, loads a direct mapping from the specified path |
+| --mapping-distr      | string, loads a distribution-based mapping from the specified path |
 | --array-size      | int, specifies the size of the crossbar array |
 | --train-model      | bool, whether to train a model, default: None|
 | --epochs      | int, number of epochs to train, default: 10|
