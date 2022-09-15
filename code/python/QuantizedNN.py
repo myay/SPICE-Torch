@@ -8,6 +8,7 @@ import numpy as np
 import custommac1d
 import custommac2d
 import mappingdirect
+import mappingdistr
 
 class Quantize(Function):
     @staticmethod
@@ -83,6 +84,7 @@ class QuantizedLinear(nn.Linear):
         self.array_size = kwargs.pop('array_size', None)
         self.mapping = kwargs.pop('mac_mapping', None)
         self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
+        self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
         self.training = None
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
@@ -129,7 +131,11 @@ class QuantizedLinear(nn.Linear):
 
                 if self.mapping_distr is not None:
                     print("in mapping_distr")
-                    output_b_pop = output_b
+                    # create buffer for accumulating random values
+                    temp_acc = torch.zeros(self.mapping_distr.shape[1]).cuda()
+                    output_b_pop = (output_b + self.array_size)/2
+                    mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, temp_acc)
+                    output_b = 2*output_b_pop - self.array_size
                     # output_b_pop = (output_b + self.array_size)/2
                     # mappingdistr.mappingdistr(output_b_pop, self.mapping_distr)
                     # output_b = 2*output_b_pop - self.array_size
