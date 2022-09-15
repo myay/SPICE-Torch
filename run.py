@@ -107,7 +107,7 @@ def main():
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
         # print("mapping", mac_mapping)
     if args.mapping_distr is not None:
-        sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).cuda()
+        sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).float().cuda()
         mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
         # use later: mapping[sorted[i]]
         # print("Mapping from distr: ", mac_mapping_distr)

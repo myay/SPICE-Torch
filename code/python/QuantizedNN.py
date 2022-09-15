@@ -130,15 +130,11 @@ class QuantizedLinear(nn.Linear):
                     # print("2", output_b)
 
                 if self.mapping_distr is not None:
-                    print("in mapping_distr")
+                    # print("in mapping_distr")
                     # create buffer for accumulating random values
-                    temp_acc = torch.zeros(self.mapping_distr.shape[1]).cuda()
                     output_b_pop = (output_b + self.array_size)/2
-                    mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, temp_acc)
+                    mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, self.sorted_mapping_idx)
                     output_b = 2*output_b_pop - self.array_size
-                    # output_b_pop = (output_b + self.array_size)/2
-                    # mappingdistr.mappingdistr(output_b_pop, self.mapping_distr)
-                    # output_b = 2*output_b_pop - self.array_size
 
                 # mappingdirect.mappingdirect(output_b, self.mapping)
                 # [-32-] [-32-] ... [-5-] #
@@ -206,6 +202,8 @@ class QuantizedConv2d(nn.Conv2d):
         self.an_sim = kwargs.pop('an_sim', None)
         self.array_size = kwargs.pop('array_size', None)
         self.mapping = kwargs.pop('mac_mapping', None)
+        self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
+        self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
         self.training = None
         super(QuantizedConv2d, self).__init__(*args, **kwargs)
 
@@ -257,6 +255,13 @@ class QuantizedConv2d(nn.Conv2d):
                     mappingdirect.mappingdirect(output_b_pop, self.mapping)
                     # print("pop2", output_b_pop)
                     # transform back to format that is needed by pytorch
+                    output_b = 2*output_b_pop - self.array_size
+
+                if self.mapping_distr is not None:
+                    # print("in mapping_distr")
+                    # create buffer for accumulating random values
+                    output_b_pop = (output_b + self.array_size)/2
+                    mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, self.sorted_mapping_idx)
                     output_b = 2*output_b_pop - self.array_size
 
                 output_b = torch.sum(output_b, 3)
