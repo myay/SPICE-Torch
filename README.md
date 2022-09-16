@@ -9,13 +9,12 @@ Tested setups:
 Supported features:
 - BNN models for FC, VGG3, VGG7
 - Datasets: FashionMNIST, KMNIST, SVHN, CIFAR10
-- Error model application for Linear and Conv2d layers (direct mapping)
-- Variable crossbar array size (from SPICE simulations)
+- Error model application for Linear and Conv2d layers (direct mapping and distribution-based mapping)
+- Variable crossbar array size
 - Training with error models
 
 TODOs:
-- Distribution-based mapping
-- Performance mode (fuse MAC engine with error application into one GPU-kernel)
+- Performance mode (MAC engine with error application are fused into one GPU-kernel)
 - Support for QNNs
 - Larger NN models
 
