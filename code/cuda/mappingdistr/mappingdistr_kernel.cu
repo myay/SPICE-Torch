@@ -34,22 +34,27 @@ __global__ void mappingdistr_kernel(
     curandState_t state0;
     curand_init(seed0+cantor_val, 0, 0, &state0);
 
-    // float rand_val = curand_uniform(&state0);
-
-    #if 0
-      if (c == 0 && d == 0 && e == 0)
-      {
-        printf("Rand. nr: %.2f\n", rand_val);
-      }
-    #endif
-
-
     // find MAC-value
     int mac_value = int(input[c][d][e]);
     // mapping_distr[mac_value][i] and mapping_distr_sorted_idx[mac_value][i] needs to be used
 
+    // print MAC value
+    // #if 0
+    //   if (c == 0 && d == 0 && e == 0)
+    //   {
+    //     printf(" (-1) Mac-value: %d\n", mac_value);
+    //   }
+    // #endif
+
     // sample a random number
     float rand_val = curand_uniform(&state0);
+
+    // #if 0
+    //   if (c == 0 && d == 0 && e == 0)
+    //   {
+    //     printf(" (0) Rand. nr: %.2f\n", rand_val);
+    //   }
+    // #endif
 
     // find out where this random value lies in mapping_distr[mac_value]
     for (int i = 0; i < mapping_distr.size(0); i++)
@@ -62,6 +67,16 @@ __global__ void mappingdistr_kernel(
         {
           // set mac value
           input[c][d][e] = mapping_distr_sorted_idx[mac_value][i+1];
+
+          // print set MAC value
+          // #if 0
+          //   if (c == 0 && d == 0 && e == 0)
+          //   {
+          //     printf(" (1) Set mac-value: %.2f\n", input[c][d][e]);
+          //   }
+          // #endif
+
+          break;
         }
       }
       else if (i == mapping_distr.size(0)-1)
@@ -71,10 +86,26 @@ __global__ void mappingdistr_kernel(
         {
           // set mac value
           input[c][d][e] = mapping_distr_sorted_idx[mac_value][i];
+
+          // print set MAC value
+          // #if 0
+          //   if (c == 0 && d == 0 && e == 0)
+          //   {
+          //     printf(" (2) Set mac-value: %.2f\n", input[c][d][e]);
+          //   }
+          // #endif
+
+          break;
         }
       }
     }
     // input[c][d][e] = input[c][d][e];
+    // #if 0
+    //   if (c == 0 && d == 0 && e == 0)
+    //   {
+    //     printf("\n---\n");
+    //   }
+    // #endif
   }
 }
 
