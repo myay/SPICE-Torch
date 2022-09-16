@@ -37,9 +37,11 @@ Here is a list of the command line parameters for running the error evaluations 
 | --model      | FC, VGG3, VGG7 |
 | --dataset      | MNIST, FMNIST, QMNIST, SVHN, CIFAR10 |
 | --an-sim      | int, whether to turn on the mapping from SPICE, default: None |
-| --mapping      | string, loads a direct mapping from the specified path |
-| --mapping-distr      | string, loads a distribution-based mapping from the specified path |
-| --array-size      | int, specifies the size of the crossbar array |
+| --mapping      | string, loads a direct mapping from the specified path, default: None |
+| --mapping-distr      | string, loads a distribution-based mapping from the specified path, default: None |
+| --array-size      | int, specifies the size of the crossbar array, default: None |
+| --print-accuracy      | int, specifies whether to print inference accuracy, default: None |
+| --test-error-distr      | int, specifies the number of repetitions to perform in accuracy evaluations for distribution based evaluation, default: None |
 | --train-model      | bool, whether to train a model, default: None|
 | --epochs      | int, number of epochs to train, default: 10|
 | --lr      | float, learning rate, default: 1.0|

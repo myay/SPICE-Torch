@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 sys.path.append("code/python/")
 
-from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, get_model_and_datasets
+from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, get_model_and_datasets, print_tikz_data
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
@@ -104,9 +104,11 @@ def main():
     mac_mapping_distr = None
     sorted_mac_mapping_idx = None
     if args.mapping is not None:
+        print("Mapping: ", args.mapping)
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
         # print("mapping", mac_mapping)
     if args.mapping_distr is not None:
+        print("Mapping distr.: ", args.mapping_distr)
         sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).float().cuda()
         mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
         # use later: mapping[sorted[i]]
@@ -179,7 +181,17 @@ def main():
         to_dump_data = dump_exp_data(model, args, all_accuracies)
         store_exp_data(to_dump_path, to_dump_data)
 
-    test(model, device, test_loader)
+    if args.test_error_distr is not None:
+        # perform repeated experiments and return in tikz format
+        acc_list = []
+        for i in range(args.test_error_distr):
+            acc_list.append(test(model, device, test_loader))
+        # print("acclist", acc_list)
+        print_tikz_data(acc_list)
+
+    if args.print_accuracy is not None:
+        print("Accuracy: ")
+        test(model, device, test_loader)
 
 
 if __name__ == '__main__':

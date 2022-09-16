@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
+import numpy as np
 import argparse
 import os
 from datetime import datetime
@@ -132,6 +133,8 @@ def parse_args(parser):
                         help='Specify the distribution-based mapping to import')
     parser.add_argument('--array-size', type=int, default=32, help='Specify the array size')
     parser.add_argument('--test-error', type=int, default=None, help='Whether to test the model')
+    parser.add_argument('--test-error-distr', type=int, default=None, help='Specify the number of repetitions to perform in accuracy evaluations')
+    parser.add_argument('--print-accuracy', type=int, default=None, help='Specify whether to print inference accuracy')
 
 
 def dump_exp_data(model, args, all_accuracies):
@@ -165,5 +168,19 @@ def store_exp_data(to_dump_path, to_dump_data):
     with open(to_dump_path, 'a') as outfile:
         json.dump(to_dump_data, outfile)
         print ("Successfully stored results in %s" % to_dump_path)
+
+def print_tikz_data(in_array):
+    accs_mean = np.mean(np.array(in_array), axis=0)
+    accs_min = np.min(np.array(in_array), axis=0)
+    accs_max = np.max(np.array(in_array), axis=0)
+
+    # x_counter = 0
+    # print(accs_mean)
+    # for idx in range(len(accs_mean)):
+    #     # print("&", end='')
+    #     print("{} {} {} {}".format(str(x_counter+1), accs_mean[idx], accs_max[idx] - accs_mean[idx], accs_mean[idx] - accs_min[idx]))
+    #     x_counter += 1
+    print("{} {} {}".format(accs_mean, accs_max - accs_mean, accs_mean - accs_min))
+
 
 # TODO: ONNX save
