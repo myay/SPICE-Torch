@@ -108,9 +108,32 @@ def main():
         mac_mapping = torch.from_numpy(np.load(args.mapping)).float().cuda()
         # print("mapping", mac_mapping)
     if args.mapping_distr is not None:
-        print("Mapping distr.: ", args.mapping_distr)
+        # print("hello")
+        # print("Mapping distr.: ", args.mapping_distr)
         sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).float().cuda()
         mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
+        # calculate cumulative distribution
+        # flag = 1
+        # a = []
+        # print("MAC mapping distr", mac_mapping_distr[2])
+        for i in range(mac_mapping_distr.shape[0]):
+            # flag = 1
+            for j in range(mac_mapping_distr.shape[1]):
+                # the first entry that is not zero needs to be left alone
+                # print("mac1", mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])])
+                # print("mac2", mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j+1])])
+                # if ((mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])] > 0) and (flag is None)):
+                #     flag = None
+                #     continue
+                if (mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])] > 0):
+                    mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])] = mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])] + mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j-1])]
+                    # print("map", mac_mapping_distr[i][int(sorted_mac_mapping_idx[i][j])])
+        # print("MAC mapping distr", mac_mapping_distr[2])
+        # print sorted array
+        # for i in range(mac_mapping_distr.shape[1]):
+        #     print(mac_mapping_distr[2][int(sorted_mac_mapping_idx[2][i])])
+        # print(mac_mapping_distr[2])
+        # print(sorted_mac_mapping_idx[2])
         # use later: mapping[sorted[i]]
         # print("Mapping from distr: ", mac_mapping_distr)
         # print("Mapping from distr idx: ", sorted_mac_mapping_idx)
