@@ -97,6 +97,7 @@ def parse_args(parser):
                     help='VGG3/VGG7')
     parser.add_argument('--dataset', type=str, default=None,
                     help='MNIST/FMNIST/QMNIST/SVHN/CIFAR10')
+    parser.add_argument('--performance-mode', type=int, default=None, help='Specify whether to activate the faster and more memory-efficient performance mode (sub-MAC results can only be changed in cuda-kernel!)')
     parser.add_argument('--train-model', type=int, default=None, help='Whether to train a model')
     parser.add_argument('--load-model-path', type=str, default=None, help='Specify path to model if it should be loaded')
     parser.add_argument('--gpu-num', type=int, default=0, metavar='N', help='Specify the GPU on which the training should be performed')

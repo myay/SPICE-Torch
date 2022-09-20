@@ -9,6 +9,7 @@ import custommac1d
 import custommac2d
 import mappingdirect
 import mappingdistr
+import custommac1dmappingdirect
 
 class Quantize(Function):
     @staticmethod
@@ -85,6 +86,7 @@ class QuantizedLinear(nn.Linear):
         self.mapping = kwargs.pop('mac_mapping', None)
         self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
         self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
+        self.performance_mode = kwargs.pop('performance_mode', None)
         self.training = None
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
@@ -108,69 +110,84 @@ class QuantizedLinear(nn.Linear):
                 weight_b = quantized_weight
                 input_b = input
                 # size for output buffer
-                buffer_size = int(np.ceil(wm_col/self.array_size))
-                output_b = torch.zeros(im_col, wm_row, buffer_size).cuda()
-                # print("im_col", im_col)
-                # print("bs", buffer_size)
-                # print("array_size", self.array_size)
-                # print("b", output_b.shape)
-                # call custom mac
-                custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
-                # print("direct")
-                # apply mapping
-                if self.mapping is not None:
-                    # get popcount value (unsigned int, max at self.array_size)
-                    # print("1", output_b)
-                    output_b_pop = (output_b + self.array_size)/2
-                    # print("pop", output_b_pop)
-                    mappingdirect.mappingdirect(output_b_pop, self.mapping)
-                    # print("pop2", output_b_pop)
-                    # transform back to format that is needed by pytorch
-                    output_b = 2*output_b_pop - self.array_size
-                    # print("2", output_b)
+                if self.performance_mode is not None:
+                    # print("performance mode", self.performance_mode)
+                    output_b = torch.zeros(im_col, wm_row).cuda()
+                    custommac1dmappingdirect.custommac1dmappingdirect(input_b, weight_b, output_b)
+                    output_b = output_b.detach()
+                    # print("custommac1d")
+                    ## check correctness
+                    # correct = torch.eq(output_b, output)
+                    # correct = (~correct).sum().item()
+                    # # 0 if tensors match
+                    # print("correctness: ", correct)
+                    output = F.linear(input, quantized_weight)
+                    output.data.copy_(output_b.data)
+                    output = output_b
+                else:
+                    buffer_size = int(np.ceil(wm_col/self.array_size))
+                    output_b = torch.zeros(im_col, wm_row, buffer_size).cuda()
+                    # print("im_col", im_col)
+                    # print("bs", buffer_size)
+                    # print("array_size", self.array_size)
+                    # print("b", output_b.shape)
+                    # call custom mac
+                    custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
+                    # print("direct")
+                    # apply mapping
+                    if self.mapping is not None:
+                        # get popcount value (unsigned int, max at self.array_size)
+                        # print("1", output_b)
+                        output_b_pop = (output_b + self.array_size)/2
+                        # print("pop", output_b_pop)
+                        mappingdirect.mappingdirect(output_b_pop, self.mapping)
+                        # print("pop2", output_b_pop)
+                        # transform back to format that is needed by pytorch
+                        output_b = 2*output_b_pop - self.array_size
+                        # print("2", output_b)
 
-                if self.mapping_distr is not None:
-                    # print("in mapping_distr")
-                    # create buffer for accumulating random values
-                    output_b_pop = (output_b + self.array_size)/2
-                    mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, self.sorted_mapping_idx)
-                    output_b = 2*output_b_pop - self.array_size
+                    if self.mapping_distr is not None:
+                        # print("in mapping_distr")
+                        # create buffer for accumulating random values
+                        output_b_pop = (output_b + self.array_size)/2
+                        mappingdistr.mappingdistr(output_b_pop, self.mapping_distr, self.sorted_mapping_idx)
+                        output_b = 2*output_b_pop - self.array_size
 
-                # mappingdirect.mappingdirect(output_b, self.mapping)
-                # [-32-] [-32-] ... [-5-] #
-                # clock freq: 1ns (also in SPICE)
-                # [-ift-] [-ift-] ... [ift] ## 7.8 ns in SPICE
-                # [-cft-] [-cft-] ... [cft] ## 10 ns in SPICE
-                # [-amac-] [-amac-] ... [-amac-] ## 1/10
-                # 1) nominal input var
-                # 2) input with process variation input
-                # popcount 0
-                # sum
-                # MAPPING: Popcountcount value -> Zyklen -> Approximate MAC Ergebnis
-                # [-1-] # user can use their own mapping popcount -> approx. mac
-                # detach, so that computations are not considered during training
-                # print(output_b.shape)
-                ### --- apply error model to output_b
-                ### --- apply snn simulation
-                ###
-                # print("pop scale", output_b_pop)
-                # normal distribution
-                output_b = torch.sum(output_b, 2)
-                output_b = output_b.detach()
-                # execute standard way, to create computation graph for backprop
-                output = F.linear(input, quantized_weight)
-                # replace custom data with standard data, without touching computation graph
-                output.data.copy_(output_b.data)
-                # output = output_b
-                # print("custommac1d")
-                # check correctness
-                # correct = torch.eq(output_b, output)
-                # correct = torch.isclose(output_b, output, atol=1e-3)
-                # correct = (~correct).sum().item()
-                # # 0 if tensors match
-                # print("correctness: ", correct)
-                # print("out_b", output_b)
-                # print("out", output)
+                    # mappingdirect.mappingdirect(output_b, self.mapping)
+                    # [-32-] [-32-] ... [-5-] #
+                    # clock freq: 1ns (also in SPICE)
+                    # [-ift-] [-ift-] ... [ift] ## 7.8 ns in SPICE
+                    # [-cft-] [-cft-] ... [cft] ## 10 ns in SPICE
+                    # [-amac-] [-amac-] ... [-amac-] ## 1/10
+                    # 1) nominal input var
+                    # 2) input with process variation input
+                    # popcount 0
+                    # sum
+                    # MAPPING: Popcountcount value -> Zyklen -> Approximate MAC Ergebnis
+                    # [-1-] # user can use their own mapping popcount -> approx. mac
+                    # detach, so that computations are not considered during training
+                    # print(output_b.shape)
+                    ### --- apply error model to output_b
+                    ### --- apply snn simulation
+                    ###
+                    # print("pop scale", output_b_pop)
+                    # normal distribution
+                    output_b = torch.sum(output_b, 2)
+                    output_b = output_b.detach()
+                    # execute standard way, to create computation graph for backprop
+                    output = F.linear(input, quantized_weight)
+                    # replace custom data with standard data, without touching computation graph
+                    output.data.copy_(output_b.data)
+                    # output = output_b
+                    # print("custommac1d")
+                    # check correctness
+                    # correct = torch.eq(output_b, output)
+                    # correct = torch.isclose(output_b, output, atol=1e-3)
+                    # correct = (~correct).sum().item()
+                    # # 0 if tensors match
+                    # print("correctness: ", correct)
+                    # print("out_b", output_b)
+                    # print("out", output)
             else:
                 output = F.linear(input, quantized_weight)
             return output
@@ -204,6 +221,7 @@ class QuantizedConv2d(nn.Conv2d):
         self.mapping = kwargs.pop('mac_mapping', None)
         self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
         self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
+        self.performance_mode = kwargs.pop('performance_mode', None)
         self.training = None
         super(QuantizedConv2d, self).__init__(*args, **kwargs)
 

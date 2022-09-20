@@ -39,6 +39,7 @@ Here is a list of the command line parameters for running the error evaluations 
 | --mapping      | string, loads a direct mapping from the specified path, default: None |
 | --mapping-distr      | string, loads a distribution-based mapping from the specified path, default: None |
 | --array-size      | int, specifies the size of the crossbar array, default: None |
+| --performance-mode      | int, specify whether to activate the faster and more memory-efficient performance mode (when using this sub-MAC results can only be changed in cuda-kernel!), default: None |
 | --print-accuracy      | int, specifies whether to print inference accuracy, default: None |
 | --test-error-distr      | int, specifies the number of repetitions to perform in accuracy evaluations for distribution based evaluation, default: None |
 | --train-model      | bool, whether to train a model, default: None|

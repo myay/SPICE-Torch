@@ -139,7 +139,7 @@ def main():
         # print("Mapping from distr idx: ", sorted_mac_mapping_idx)
 
 
-    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
+    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None).to(device)
 
     # optimizer = optim.Adam(model.parameters(), lr=args.lr)
     optimizer = Clippy(model.parameters(), lr=args.lr)
