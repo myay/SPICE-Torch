@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 sys.path.append("code/python/")
 
-from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, get_model_and_datasets, print_tikz_data
+from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, store_exp_data, get_model_and_datasets, print_tikz_data, cuda_profiler
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
@@ -216,6 +216,13 @@ def main():
         print("Accuracy: ")
         test(model, device, test_loader)
 
+    if args.profile_time is not None:
+        print("Measuring time: ")
+        times_list = []
+        for rep in range(args.profile_time):
+            profiled = cuda_profiler(test, model, device, test_loader, pr=None)
+            times_list.append(profiled)
+        print_tikz_data(times_list)
 
 if __name__ == '__main__':
     main()

@@ -53,6 +53,7 @@ Here is a list of the command line parameters for running the error evaluations 
 | --load-training-state | string, saves a training state with the specified name in the string, default:None |
 | --save-training-state | string, loads a training state from the specified path in the string, default: None |
 | --gpu-num | int, specifies the GPU on which the training should be performed, default: 0 |
+| --profile-time | int, Specify whether to profile the execution time by specifying the repetitions, default: None |
 
 More information on the command line parameters can be found [here](https://github.com/myay/IFneuronSPICE/blob/main/code/python/Utils.py#L55).
 

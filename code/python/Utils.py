@@ -135,6 +135,7 @@ def parse_args(parser):
     parser.add_argument('--test-error', type=int, default=None, help='Whether to test the model')
     parser.add_argument('--test-error-distr', type=int, default=None, help='Specify the number of repetitions to perform in accuracy evaluations')
     parser.add_argument('--print-accuracy', type=int, default=None, help='Specify whether to print inference accuracy')
+    parser.add_argument('--profile-time', type=int, default=None, help='Specify whether to profile the execution time by specifying the repetitions')
 
 
 def dump_exp_data(model, args, all_accuracies):
@@ -182,5 +183,13 @@ def print_tikz_data(in_array):
     #     x_counter += 1
     print("{} {} {}".format(accs_mean, accs_max - accs_mean, accs_mean - accs_min))
 
-
-# TODO: ONNX save
+# wrapper for profiling functions
+def cuda_profiler(profile_function, *args, **kwargs):
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+    start.record()
+    output = profile_function(*args, **kwargs)
+    end.record()
+    torch.cuda.synchronize()
+    print("Run time (ms):", start.elapsed_time(end))
+    return start.elapsed_time(end)
