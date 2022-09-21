@@ -140,36 +140,44 @@ class VGG7(nn.Module):
         self.qact1 = QuantizedActivation(quantization=self.quantization)
 
         # block 2
-        self.conv2 = QuantizedConv2d(128, 128, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.conv2 = QuantizedConv2d(128, 128, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode,
+        error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn2 = nn.BatchNorm2d(128)
         self.qact2 = QuantizedActivation(quantization=self.quantization)
 
         # block 3
-        self.conv3 = QuantizedConv2d(128, 256, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.conv3 = QuantizedConv2d(128, 256, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn3 = nn.BatchNorm2d(256)
         self.qact3 = QuantizedActivation(quantization=self.quantization)
 
         # block 4
-        self.conv4 = QuantizedConv2d(256, 256, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.conv4 = QuantizedConv2d(256, 256, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn4 = nn.BatchNorm2d(256)
         self.qact4 = QuantizedActivation(quantization=self.quantization)
 
         # block 5
-        self.conv5 = QuantizedConv2d(256, 512, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.conv5 = QuantizedConv2d(256, 512, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn5 = nn.BatchNorm2d(512)
         self.qact5 = QuantizedActivation(quantization=self.quantization)
 
         # block 6
-        self.conv6 = QuantizedConv2d(512, 512, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.conv6 = QuantizedConv2d(512, 512, kernel_size=3, padding=1, stride=1, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn6 = nn.BatchNorm2d(512)
         self.qact6 = QuantizedActivation(quantization=self.quantization)
 
         # block 7
-        self.fc1 = QuantizedLinear(8192, 1024, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.fc1 = QuantizedLinear(8192, 1024, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.bn7 = nn.BatchNorm1d(1024)
         self.qact7 = QuantizedActivation(quantization=self.quantization)
 
-        self.fc2 = QuantizedLinear(1024, 10, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.fc2 = QuantizedLinear(1024, 10, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx,
+        performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
         self.scale = Scale(init_value=1e-3)
 
     def forward(self, x):
