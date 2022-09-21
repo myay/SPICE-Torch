@@ -1,0 +1,36 @@
+#include <torch/extension.h>
+#include <vector>
+
+// CUDA forward declaration
+torch::Tensor custommac2dmappingdistr_cuda(
+    torch::Tensor input,
+    torch::Tensor weight,
+    torch::Tensor output,
+    torch::Tensor mapping_distr,
+    torch::Tensor mapping_distr_sorted_idx,
+    int array_size
+  );
+
+#define CHECK_CUDA(x) AT_ASSERTM(x.device().is_cuda(), #x " must be a CUDA tensor")
+#define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
+#define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
+
+torch::Tensor custommac2dmappingdistr(
+    torch::Tensor input,
+    torch::Tensor weight,
+    torch::Tensor output,
+    torch::Tensor mapping_distr,
+    torch::Tensor mapping_distr_sorted_idx,
+    int array_size
+  ) {
+  CHECK_INPUT(input);
+  CHECK_INPUT(weight);
+  CHECK_INPUT(output);
+  CHECK_INPUT(mapping_distr);
+  CHECK_INPUT(mapping_distr_sorted_idx);
+  return custommac2dmappingdistr_cuda(input, weight, output, mapping_distr, mapping_distr_sorted_idx, array_size);
+}
+
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+  m.def("custommac2dmappingdistr", &custommac2dmappingdistr, "CUSTOMMAC2DMAPPINGDISTR");
+}

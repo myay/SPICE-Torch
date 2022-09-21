@@ -15,10 +15,10 @@
 #define DEBUG_SEEDS 0
 
 template <typename scalar_t>
-__global__ void custommac1dmappingdistr_kernel(
-    torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input,
+__global__ void custommac2dmappingdistr_kernel(
+    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> input,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> weight,
-    torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output,
+    torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> output,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> mapping_distr,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> mapping_distr_sorted_idx,
     int array_size,
@@ -29,12 +29,11 @@ __global__ void custommac1dmappingdistr_kernel(
   // handle access indices
   const int c = blockIdx.x * blockDim.x + threadIdx.x; // y
   const int d = blockIdx.y * blockDim.y + threadIdx.y; // x
+  const int e = blockIdx.z * blockDim.z + threadIdx.z; // z
 
   // make sure we don't modify memory regions outside of output
-  if ((d < output.size(0)) && (c < output.size(1)))
+  if ((d < output.size(0)) && (c < output.size(1)) && (e < output.size(2)))
   {
-    // creates a unique value from three values with cantor pairing function
-    // the combination of (c,d,e) -> cantor_val (N^3->N) is bijective
     // unsigned long long k1 = 0.5*(c+d)*(c+d+1)+d;
     // unsigned long long cantor_val = 0.5*(k1+e)*(k1+e+1)+e;
     unsigned long long cantor_val = 0.5*(c+d)*(c+d+1)+d;
@@ -47,7 +46,7 @@ __global__ void custommac1dmappingdistr_kernel(
     for(int i = 0; i < weight.size(1); i++)
     {
       //printf("Thread: (%d,%d,%d)\nWeight: %.4f, Input: %.4f\n", c, d, e, weight[c][i], input[d][i][e]);
-      sub_mac_result += (weight[c][i] * input[d][i]);
+      sub_mac_result += (weight[c][i] * input[d][i][e]);
       cycle_counter += 1;
 
       if((cycle_counter == array_size) || (i == (weight.size(1)-1)))
@@ -83,7 +82,7 @@ __global__ void custommac1dmappingdistr_kernel(
           }
         }
         sub_mac_result = 2*sub_mac_result - array_size;
-        output[d][c] += sub_mac_result;
+        output[d][c][e] += sub_mac_result;
         sub_mac_result = 0;
         shifted_mac_result = 0;
         cycle_counter = 0;
@@ -92,7 +91,7 @@ __global__ void custommac1dmappingdistr_kernel(
   }
 }
 
-torch::Tensor custommac1dmappingdistr_cuda(
+torch::Tensor custommac2dmappingdistr_cuda(
   torch::Tensor input,
   torch::Tensor weight,
   torch::Tensor output,
@@ -108,17 +107,21 @@ torch::Tensor custommac1dmappingdistr_cuda(
   // https://devtalk.nvidia.com/default/topic/1028226/how-many-concurrent-threads-are-running-on-my-geforce-gtx-1080-ti-/
   const int output_size_x = output.size(1);
   const int output_size_y = output.size(0);
-  int threads_x = 16; // per block, 16
-  int threads_y = 16; // per block, 16
+  const int output_size_z = output.size(2);
+  int threads_x = 8; // per block, 8
+  int threads_y = 8; // per block, 8
+  int threads_z = 8; // per block, 8
 
   #if DEBUG_1D
     threads_x = 1;
     threads_y = 1;
+    threads_z = 1;
   #endif
 
-  const dim3 threads(threads_x,threads_y);
+  const dim3 threads(threads_x, threads_y, threads_z);
   const dim3 blocks((output_size_x + threads_x - 1) / threads_x,
-                    (output_size_y + threads_y - 1) / threads_y);
+                    (output_size_y + threads_y - 1) / threads_y,
+                    (output_size_z + threads_z - 1) / threads_z);
 
   // create a seed from the current time in nanoseconds
   auto now = std::chrono::system_clock::now();
@@ -126,11 +129,11 @@ torch::Tensor custommac1dmappingdistr_cuda(
   auto value = now_ms.time_since_epoch();
   unsigned long long seed0 = value.count();
 
-  AT_DISPATCH_ALL_TYPES(input.type(), "custommac1dmappingdistr_cuda", ([&] {
-    custommac1dmappingdistr_kernel<scalar_t><<<blocks, threads>>>(
-        input.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+  AT_DISPATCH_ALL_TYPES(input.type(), "custommac2dmappingdistr_cuda", ([&] {
+    custommac2dmappingdistr_kernel<scalar_t><<<blocks, threads>>>(
+        input.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
         weight.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-        output.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+        output.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
         mapping_distr.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         mapping_distr_sorted_idx.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         array_size,

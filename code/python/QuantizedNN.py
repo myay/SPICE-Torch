@@ -11,8 +11,8 @@ import mappingdirect
 import mappingdistr
 import custommac1dmappingdirect
 import custommac2dmappingdirect
-
 import custommac1dmappingdistr
+import custommac2dmappingdistr
 
 class Quantize(Function):
     @staticmethod
@@ -278,12 +278,18 @@ class QuantizedConv2d(nn.Conv2d):
                         custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b, self.mapping, self.array_size)
                         output_b = output_b.view(input_b.shape[0], wm_row, h, w)
                         output_b = output_b.detach()
+
+                    if self.mapping_distr is not None:
+                        # print("mapping in performance mode")
+                        custommac2dmappingdistr.custommac2dmappingdistr(input_b, weight_b, output_b, self.mapping_distr, self.sorted_mapping_idx, self.array_size)
+                        output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                        output_b = output_b.detach()
                     # print("1?")
                     # custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b)
                     # output_b = output_b.view(input_b.shape[0], wm_row, h, w)
                     # output_b = output_b.detach()
                     output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-                    # output.data.copy_(output_b.data)
+                    output.data.copy_(output_b.data)
                     # output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
                 else:
                     # size for output buffer
