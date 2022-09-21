@@ -15,7 +15,9 @@ template <typename scalar_t>
 __global__ void custommac1dmappingdirect_kernel(
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input,
     torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> weight,
-    torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output
+    torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output,
+    torch::PackedTensorAccessor<scalar_t,1,torch::RestrictPtrTraits,size_t> mapping,
+    int array_size
   )
 {
 
@@ -30,23 +32,28 @@ __global__ void custommac1dmappingdirect_kernel(
     // each thread of out calculates a MAC (row of filter times column of input)
 
     // every thread is responsible for one sum, there are as many threads as mac sums in output
-    output[d][c] = 0;
-    float mult_result = 0;
+
+
+    int cycle_counter = 0; // nr of ready inputs to majority gate
+    float shifted_mac_result = 0;
+    float sub_mac_result = 0;
     for(int i = 0; i < weight.size(1); i++)
     {
         //printf("Thread: (%d,%d,%d)\nWeight: %.4f, Input: %.4f\n", c, d, e, weight[c][i], input[d][i][e]);
-        mult_result = weight[c][i] * input[d][i];
+        sub_mac_result += (weight[c][i] * input[d][i]);
+        cycle_counter += 1;
 
-        output[d][c] += mult_result;
-        #if 0
-          if (d == 0 && c == 0)
-          {
-            printf("f01: %.2f, f10: %.2f, seed0: %d, cantor_val: %d\n", f01, f10, seed0, cantor_val);
-            //printf("CUDA shape of weight [%d]", weight.size(0));
-            //printf("CUDA shape of input [%d,%d]",  input.size(0), input.size(1));
-            //printf("CUDA shape of output [%d,%d]\n\n", output.size(0), output.size(1));
-          }
-        #endif
+        if((cycle_counter == array_size) || (i == (weight.size(1)-1)))
+        {
+          shifted_mac_result = (sub_mac_result + array_size)/2;
+          shifted_mac_result = mapping[int(shifted_mac_result)];
+          sub_mac_result = 2*shifted_mac_result - array_size;
+          output[d][c] += sub_mac_result;
+          sub_mac_result = 0;
+          shifted_mac_result = 0;
+          cycle_counter = 0;
+        }
+        // input[c][d][e] = mapping[int(input[c][d][e])];
     }
   }
 }
@@ -54,7 +61,9 @@ __global__ void custommac1dmappingdirect_kernel(
 torch::Tensor custommac1dmappingdirect_cuda(
   torch::Tensor input,
   torch::Tensor weight,
-  torch::Tensor output
+  torch::Tensor output,
+  torch::Tensor mapping,
+  int array_size
 ) {
   // The number of thread blocks in a grid is usually dictated by the size of the data being processed, which typically exceeds the number of processors in the system.
   // dim3 threadsPerBlock(8,8,8)
@@ -80,7 +89,9 @@ torch::Tensor custommac1dmappingdirect_cuda(
     custommac1dmappingdirect_kernel<scalar_t><<<blocks, threads>>>(
         input.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         weight.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-        output.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>()
+        output.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+        mapping.packed_accessor<scalar_t,1,torch::RestrictPtrTraits,size_t>(),
+        array_size
     );
   }));
 

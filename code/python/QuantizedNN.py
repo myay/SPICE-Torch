@@ -115,7 +115,9 @@ class QuantizedLinear(nn.Linear):
                     # print("performance mode 1d")
                     # print("performance mode", self.performance_mode)
                     output_b = torch.zeros(im_col, wm_row).cuda()
-                    custommac1dmappingdirect.custommac1dmappingdirect(input_b, weight_b, output_b)
+                    if self.mapping is not None:
+                        # print("mapping in performance mode")
+                        custommac1dmappingdirect.custommac1dmappingdirect(input_b, weight_b, output_b, self.mapping, self.array_size)
                     output_b = output_b.detach()
                     # print("custommac1d")
                     ## check correctness
