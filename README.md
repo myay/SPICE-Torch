@@ -12,9 +12,10 @@ Supported features:
 - Error model application for Linear and Conv2d layers (direct mapping and distribution-based mapping)
 - Variable crossbar array size
 - Training with error models
+- Performance mode (MAC engine with error application are fused into one GPU-kernel)
 
 TODOs:
-- Performance mode (MAC engine with error application are fused into one GPU-kernel)
+- Optimize MAC engine for execution time
 - Support for QNNs
 - Larger NN models
 
