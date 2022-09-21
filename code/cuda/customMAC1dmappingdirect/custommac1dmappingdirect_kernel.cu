@@ -28,13 +28,7 @@ __global__ void custommac1dmappingdirect_kernel(
   // make sure we don't modify memory regions outside of output
   if ((d < output.size(0)) && (c < output.size(1)))
   {
-    // this is (c,d,e), we have as many threads as we have pixels in output out
-    // each thread of out calculates a MAC (row of filter times column of input)
-
-    // every thread is responsible for one sum, there are as many threads as mac sums in output
-
-
-    int cycle_counter = 0; // nr of ready inputs to majority gate
+    int cycle_counter = 0;
     float shifted_mac_result = 0;
     float sub_mac_result = 0;
     for(int i = 0; i < weight.size(1); i++)
@@ -53,7 +47,6 @@ __global__ void custommac1dmappingdirect_kernel(
           shifted_mac_result = 0;
           cycle_counter = 0;
         }
-        // input[c][d][e] = mapping[int(input[c][d][e])];
     }
   }
 }
@@ -85,7 +78,7 @@ torch::Tensor custommac1dmappingdirect_cuda(
   const dim3 blocks((output_size_x + threads_x - 1) / threads_x,
                     (output_size_y + threads_y - 1) / threads_y);
 
-  AT_DISPATCH_ALL_TYPES(input.type(), "custommac1d_cuda", ([&] {
+  AT_DISPATCH_ALL_TYPES(input.type(), "custommac1dmappingdirect_cuda", ([&] {
     custommac1dmappingdirect_kernel<scalar_t><<<blocks, threads>>>(
         input.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
         weight.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),

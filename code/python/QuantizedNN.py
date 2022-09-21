@@ -118,7 +118,7 @@ class QuantizedLinear(nn.Linear):
                     if self.mapping is not None:
                         # print("mapping in performance mode")
                         custommac1dmappingdirect.custommac1dmappingdirect(input_b, weight_b, output_b, self.mapping, self.array_size)
-                    output_b = output_b.detach()
+                        output_b = output_b.detach()
                     # print("custommac1d")
                     ## check correctness
                     # correct = torch.eq(output_b, output)
@@ -266,9 +266,14 @@ class QuantizedConv2d(nn.Conv2d):
                 if self.performance_mode is not None:
                     # print("performance mode 2d")
                     output_b = torch.zeros(input_b.shape[0], wm_row, im_col).cuda()
-                    custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b)
-                    output_b = output_b.view(input_b.shape[0], wm_row, h, w)
-                    output_b = output_b.detach()
+                    if self.mapping is not None:
+                        # print("mapping in performance mode")
+                        custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b, self.mapping, self.array_size)
+                        output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                        output_b = output_b.detach()
+                    # custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b)
+                    # output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                    # output_b = output_b.detach()
                     output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
                     output.data.copy_(output_b.data)
                     # output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)

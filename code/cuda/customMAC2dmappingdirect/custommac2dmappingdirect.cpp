@@ -5,7 +5,9 @@
 torch::Tensor custommac2dmappingdirect_cuda(
     torch::Tensor input,
     torch::Tensor weight,
-    torch::Tensor output
+    torch::Tensor output,
+    torch::Tensor mapping,
+    int array_size
   );
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.device().is_cuda(), #x " must be a CUDA tensor")
@@ -15,12 +17,15 @@ torch::Tensor custommac2dmappingdirect_cuda(
 torch::Tensor custommac2dmappingdirect(
     torch::Tensor input,
     torch::Tensor weight,
-    torch::Tensor output
+    torch::Tensor output,
+    torch::Tensor mapping,
+    int array_size
   ) {
   CHECK_INPUT(input);
   CHECK_INPUT(weight);
   CHECK_INPUT(output);
-  return custommac2dmappingdirect_cuda(input, weight, output);
+  CHECK_INPUT(mapping);
+  return custommac2dmappingdirect_cuda(input, weight, output, mapping, array_size);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
