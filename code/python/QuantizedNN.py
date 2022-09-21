@@ -90,7 +90,7 @@ class QuantizedLinear(nn.Linear):
         self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
         self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
         self.performance_mode = kwargs.pop('performance_mode', None)
-        self.training = None
+        self.training = kwargs.pop('train_model', None)
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
     def forward(self, input):
@@ -132,9 +132,11 @@ class QuantizedLinear(nn.Linear):
                     # correct = (~correct).sum().item()
                     # # 0 if tensors match
                     # print("correctness: ", correct)
-                    output = F.linear(input, quantized_weight)
-                    output.data.copy_(output_b.data)
-                    output = output_b
+                    if self.training is not None:
+                        output = F.linear(input, quantized_weight)
+                        output.data.copy_(output_b.data)
+                    else:
+                        output = output_b
                 else:
                     buffer_size = int(np.ceil(wm_col/self.array_size))
                     output_b = torch.zeros(im_col, wm_row, buffer_size).cuda()
@@ -233,7 +235,7 @@ class QuantizedConv2d(nn.Conv2d):
         self.mapping_distr = kwargs.pop('mac_mapping_distr', None)
         self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
         self.performance_mode = kwargs.pop('performance_mode', None)
-        self.training = None
+        self.training = kwargs.pop('train_model', None)
         super(QuantizedConv2d, self).__init__(*args, **kwargs)
 
     def forward(self, input):
@@ -288,8 +290,11 @@ class QuantizedConv2d(nn.Conv2d):
                     # custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b)
                     # output_b = output_b.view(input_b.shape[0], wm_row, h, w)
                     # output_b = output_b.detach()
-                    output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-                    output.data.copy_(output_b.data)
+                    if self.training is not None:
+                        output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+                        output.data.copy_(output_b.data)
+                    else:
+                        output = output_b
                     # output = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
                 else:
                     # size for output buffer
