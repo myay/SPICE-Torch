@@ -91,6 +91,8 @@ class QuantizedLinear(nn.Linear):
         self.sorted_mapping_idx = kwargs.pop('sorted_mac_mapping_idx', None)
         self.performance_mode = kwargs.pop('performance_mode', None)
         self.training = kwargs.pop('train_model', None)
+        self.extract_absfreq = kwargs.pop('extract_absfreq', None)
+        self.absfreq = torch.zeros(self.array_size+1, dtype=int).cuda()
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
     def forward(self, input):
@@ -147,6 +149,21 @@ class QuantizedLinear(nn.Linear):
                     # call custom mac
                     custommac1d.custommac1d(input_b, weight_b, output_b, self.array_size)
                     # print("direct")
+
+                    if self.extract_absfreq is not None:
+                        # get popcount value (unsigned int, max at self.array_size)
+                        # print("1", output_b)
+                        output_b_pop = (output_b + self.array_size)/2
+                        # print("pop", output_b_pop)
+                        output_int = torch.flatten(output_b_pop.int())
+                        # print("out int", output_int)
+                        self.absfreq += torch.bincount(output_int, minlength=self.array_size+1)
+                        # print("absfreq", self.absfreq)
+                        # print("pop2", output_b_pop)
+                        # transform back to format that is needed by pytorch
+                        output_b = 2*output_b_pop - self.array_size
+                        # print("2", output_b)
+
                     # apply mapping
                     if self.mapping is not None:
                         # get popcount value (unsigned int, max at self.array_size)

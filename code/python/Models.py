@@ -56,7 +56,7 @@ class FC(nn.Module):
         return x
 
 class VGG3(nn.Module):
-    def __init__(self, train_crit, test_crit, quantMethod=None, an_sim=None, array_size=None, mapping=None, mapping_distr=None, sorted_mapping_idx=None, performance_mode=None, quantize_train=True, quantize_eval=True, error_model=None, train_model=None):
+    def __init__(self, train_crit, test_crit, quantMethod=None, an_sim=None, array_size=None, mapping=None, mapping_distr=None, sorted_mapping_idx=None, performance_mode=None, quantize_train=True, quantize_eval=True, error_model=None, train_model=None, extract_absfreq=None):
         super(VGG3, self).__init__()
         self.name = "VGG3"
         self.traincriterion = train_crit
@@ -72,6 +72,7 @@ class VGG3(nn.Module):
         self.sorted_mapping_idx = sorted_mapping_idx
         self.performance_mode = performance_mode
         self.train_model = train_model
+        self.extract_absfreq = extract_absfreq
         self.htanh = nn.Hardtanh()
 
         self.conv1 = QuantizedConv2d(1, 64, kernel_size=3, padding=1, stride=1, quantization=self.quantization, error_model=self.error_model, bias=False)
@@ -82,11 +83,11 @@ class VGG3(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.qact2 = QuantizedActivation(quantization=self.quantization)
 
-        self.fc1 = QuantizedLinear(7*7*64, 2048, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.fc1 = QuantizedLinear(7*7*64, 2048, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, sorted_mac_mapping_idx=self.sorted_mapping_idx, performance_mode=self.performance_mode, error_model=self.error_model, bias=False, train_model=self.train_model, extract_absfreq=self.extract_absfreq)
         self.bn3 = nn.BatchNorm1d(2048)
         self.qact3 = QuantizedActivation(quantization=self.quantization)
 
-        self.fc2 = QuantizedLinear(2048, 10, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, performance_mode=self.performance_mode, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model)
+        self.fc2 = QuantizedLinear(2048, 10, quantization=self.quantization, an_sim=self.an_sim, array_size=self.array_size, mac_mapping=self.mapping, mac_mapping_distr=self.mapping_distr, performance_mode=self.performance_mode, sorted_mac_mapping_idx=self.sorted_mapping_idx, error_model=self.error_model, bias=False, train_model=self.train_model, extract_absfreq=self.extract_absfreq)
         self.scale = Scale()
 
     def forward(self, x):

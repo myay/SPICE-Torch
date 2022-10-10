@@ -139,7 +139,7 @@ def main():
         # print("Mapping from distr idx: ", sorted_mac_mapping_idx)
 
 
-    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None, train_model=args.train_model).to(device)
+    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None, train_model=args.train_model, extract_absfreq=args.extract_absfreq).to(device)
 
     # optimizer = optim.Adam(model.parameters(), lr=args.lr)
     optimizer = Clippy(model.parameters(), lr=args.lr)
@@ -223,6 +223,21 @@ def main():
             profiled = cuda_profiler(test, model, device, test_loader, pr=None)
             times_list.append(profiled)
         print_tikz_data(times_list)
+
+    if args.extract_absfreq is not None:
+        # reset all stored data
+        for layer in model.children():
+            if isinstance(layer, (QuantizedLinear)):
+                layer.absfreq = torch.zeros(args.array_size+1, dtype=int).cuda()
+        # run train set
+        test(model, device, train_loader)
+        extract_absfreq = 1
+        if extract_absfreq is not None:
+            for layer in model.children():
+                if isinstance(layer, (QuantizedLinear)):
+                    print(layer.name)
+                    print(layer.absfreq)
+
 
 if __name__ == '__main__':
     main()
