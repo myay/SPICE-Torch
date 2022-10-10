@@ -11,6 +11,11 @@ import time
 import json
 import sys
 import os
+import scipy
+
+from scipy.stats import norm
+import matplotlib.pyplot as plt
+
 from datetime import datetime
 sys.path.append("code/python/")
 
@@ -227,17 +232,33 @@ def main():
     if args.extract_absfreq is not None:
         # reset all stored data
         for layer in model.children():
-            if isinstance(layer, (QuantizedLinear)):
+            if isinstance(layer, (QuantizedLinear, QuantizedConv2d)):
                 layer.absfreq = torch.zeros(args.array_size+1, dtype=int).cuda()
         # run train set
         test(model, device, train_loader)
         extract_absfreq = 1
         if extract_absfreq is not None:
-            for layer in model.children():
-                if isinstance(layer, (QuantizedLinear)):
-                    print(layer.name)
-                    print(layer.absfreq)
-
+            for idx, layer in enumerate(model.children()):
+                if isinstance(layer, (QuantizedLinear, QuantizedConv2d)):
+                    # print(idx)
+                    # print(layer.absfreq)
+                    counts_np = layer.absfreq.cpu().numpy()
+                    bins_np = np.array([i for i in range(0,args.array_size+1)])
+                    plt.bar(bins_np, counts_np, color ='black', width = 0.5)
+                    plt.savefig("abs_freq_{}.pdf".format(idx), format="pdf")
+            # export data to numpy array
+            accumulated_counts_np = np.zeros(args.array_size+1, dtype=int)
+            for idx, layer in enumerate(model.children()):
+                if isinstance(layer, (QuantizedLinear, QuantizedConv2d)):
+                    # print(idx)
+                    # print(layer.absfreq)
+                    accumulated_counts_np += layer.absfreq.cpu().numpy()
+            # export data
+            with open('accumulated_counts_{}.npy'.format(args.dataset), 'wb') as mp:
+                np.save(mp, accumulated_counts_np)
+            bins_np_all = np.array([i for i in range(0,args.array_size+1)])
+            plt.bar(bins_np_all, accumulated_counts_np, color ='black', width = 0.5)
+            plt.savefig("abs_freq_accumualted.pdf".format(idx), format="pdf")
 
 if __name__ == '__main__':
     main()
