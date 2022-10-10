@@ -243,7 +243,7 @@ def main():
                 counts_np = layer.absfreq.cpu().numpy()
                 bins_np = np.array([i for i in range(0,args.array_size+1)])
                 plt.bar(bins_np, counts_np, color ='black', width = 0.5)
-                plt.savefig("abs_freq_{}.pdf".format(idx), format="pdf")
+                plt.savefig("abs_freq_{}_{}.pdf".format(args.dataset, idx), format="pdf")
                 plt.clf()
         # export data to numpy array
         accumulated_counts_np = np.zeros(args.array_size+1, dtype=int)
@@ -258,7 +258,7 @@ def main():
         print("accumulated", accumulated_counts_np)
         bins_np_all = np.array([i for i in range(0,args.array_size+1)])
         plt.bar(bins_np_all, accumulated_counts_np, color ='black', width = 0.5)
-        plt.savefig("abs_freq_accumualted.pdf".format(idx), format="pdf")
+        plt.savefig("abs_freq_accumualted_{}.pdf".format(args.dataset), format="pdf")
         plt.clf()
 
 if __name__ == '__main__':
