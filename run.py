@@ -115,8 +115,8 @@ def main():
     if args.mapping_distr is not None:
         # print("hello")
         # print("Mapping distr.: ", args.mapping_distr)
-        sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).float().cuda()
-        mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda()
+        sorted_mac_mapping_idx = torch.from_numpy(np.argsort(np.load(args.mapping_distr))).float().cuda().contiguous()
+        mac_mapping_distr = torch.from_numpy(np.load(args.mapping_distr)).float().cuda().contiguous()
         # calculate cumulative distribution
         # flag = 1
         # a = []
