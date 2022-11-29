@@ -60,6 +60,4 @@ Here is a list of the command line parameters for running the error evaluations 
 
 More information on the command line parameters can be found [here](https://github.com/myay/IFneuronSPICE/blob/main/code/python/Utils.py#L55).
 
-The code is an extension based on the MNIST example in https://github.com/pytorch/examples/tree/master/mnist.
-
 Please contact me if you have any questions: mikail.yayla@tu-dortmund.de.
