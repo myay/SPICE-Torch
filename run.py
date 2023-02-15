@@ -31,6 +31,8 @@ import binarizePM1
 import binarizePM1FI
 import quantization
 
+from resnet18 import ResNet, BasicBlock
+
 class SymmetricBitErrorsBinarizedPM1:
     def __init__(self, method, p):
         self.method = method
@@ -51,10 +53,10 @@ class Quantization1:
 binarizepm1 = Quantization1(binarizePM1.binarize)
 binarizepm1fi = SymmetricBitErrorsBinarizedPM1(binarizePM1FI.binarizeFI, 0.1)
 
-# crit_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
-# crit_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
-crit_train = Criterion(binary_hingeloss, "MHL_train", param=128)
-crit_test = Criterion(binary_hingeloss, "MHL_test", param=128)
+crit_train = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_train")
+crit_test = Criterion(method=nn.CrossEntropyLoss(reduction="none"), name="CEL_test")
+# crit_train = Criterion(binary_hingeloss, "MHL_train", param=128)
+# crit_test = Criterion(binary_hingeloss, "MHL_test", param=128)
 
 q_train = True # quantization during training
 q_eval = True # quantization during evaluation
@@ -143,8 +145,12 @@ def main():
         # print("Mapping from distr: ", mac_mapping_distr)
         # print("Mapping from distr idx: ", sorted_mac_mapping_idx)
 
-
-    model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None, train_model=args.train_model, extract_absfreq=args.extract_absfreq).to(device)
+    model = None
+    if args.model == "ResNet":
+        model = nn_model(BasicBlock, [2, 2, 2, 2], crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None, train_model=args.train_model, extract_absfreq=args.extract_absfreq).to(device)
+    else:
+        # model = nn_model().to(device)
+        model = nn_model(crit_train, crit_test, quantMethod=binarizepm1, an_sim=args.an_sim, array_size=args.array_size, mapping=mac_mapping, mapping_distr=mac_mapping_distr, sorted_mapping_idx=sorted_mac_mapping_idx, performance_mode=args.performance_mode, quantize_train=q_train, quantize_eval=q_eval, error_model=None, train_model=args.train_model, extract_absfreq=args.extract_absfreq).to(device)
 
     # optimizer = optim.Adam(model.parameters(), lr=args.lr)
     optimizer = Clippy(model.parameters(), lr=args.lr)

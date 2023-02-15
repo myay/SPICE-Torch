@@ -92,7 +92,8 @@ class QuantizedLinear(nn.Linear):
         self.performance_mode = kwargs.pop('performance_mode', None)
         self.training = kwargs.pop('train_model', None)
         self.extract_absfreq = kwargs.pop('extract_absfreq', None)
-        self.absfreq = torch.zeros(self.array_size+1, dtype=int).cuda()
+        if self.extract_absfreq is not None:
+            self.absfreq = torch.zeros(self.array_size+1, dtype=int).cuda()
         super(QuantizedLinear, self).__init__(*args, **kwargs)
 
     def forward(self, input):
@@ -254,7 +255,8 @@ class QuantizedConv2d(nn.Conv2d):
         self.performance_mode = kwargs.pop('performance_mode', None)
         self.training = kwargs.pop('train_model', None)
         self.extract_absfreq = kwargs.pop('extract_absfreq', None)
-        self.absfreq = torch.zeros(self.array_size+1, dtype=int).cuda()
+        if self.extract_absfreq is not None:
+            self.absfreq = torch.zeros(self.array_size+1, dtype=int).cuda()
         super(QuantizedConv2d, self).__init__(*args, **kwargs)
 
     def forward(self, input):
@@ -338,7 +340,7 @@ class QuantizedConv2d(nn.Conv2d):
                         # transform back to format that is needed by pytorch
                         output_b = 2*output_b_pop - self.array_size
                         # print("2", output_b)
-                        
+
                     if self.mapping is not None:
                         output_b_pop = (output_b + self.array_size)/2
                         # print("pop", output_b_pop)

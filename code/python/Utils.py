@@ -10,6 +10,7 @@ import json
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
 from Models import FC, VGG3, VGG7
+from resnet18 import ResNet, BasicBlock
 
 def get_model_and_datasets(args):
     nn_model = None
@@ -26,6 +27,8 @@ def get_model_and_datasets(args):
     if args.model == "VGG7":
         nn_model = VGG7
         # model = nn_model().cuda()
+    if args.model == "ResNet":
+        nn_model = ResNet# nn_model(BasicBlock, [2, 2, 2, 2]).to(device)
 
     if args.dataset == "MNIST":
         transform=transforms.Compose([
@@ -82,6 +85,17 @@ def get_model_and_datasets(args):
             ])
         dataset1 = datasets.CIFAR100('data', train=True, download=True, transform=transform_train)
         dataset2 = datasets.CIFAR100('data', train=False, transform=transform_test)
+
+    if args.dataset == "IMAGENETTE":
+        transform = transforms.Compose([
+            transforms.Resize((64, 64)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+
+        dataset1 = datasets.ImageFolder('data/imagenette2/train', transform=transform)
+        dataset2 = datasets.ImageFolder('data/imagenette2/val', transform=transform)    
     return nn_model, dataset1, dataset2
 
 def set_layer_mode(model, mode):
