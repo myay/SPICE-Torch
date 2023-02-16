@@ -266,6 +266,11 @@ class QuantizedConv2d(nn.Conv2d):
              self.quantize_eval, self.training)
             if (check_q == True):
                 quantized_weight = quantize(self.weight, self.quantization)
+                # weight_b1 = quantized_weight.view(self.out_channels,-1).cuda()
+                # wm = weight_b1.shape
+                # input_b1 = F.unfold(input, kernel_size=self.kernel_size, padding=self.padding, stride=self.stride).cuda()
+                # im = input_b1.shape
+                # print("wm, im", wm, im)
             else:
                 quantized_weight = self.weight
                 quantized_bias = self.bias

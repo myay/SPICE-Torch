@@ -121,12 +121,17 @@ class ResNet(nn.Module):
     def forward(self, x):
         out = self.qact(self.htanh(self.bn1(self.conv1(x))))
         out = self.layer1(out)
+        # out = F.max_pool2d(out, 2)
         out = self.layer2(out)
+        # out = F.max_pool2d(out, 2)
         out = self.layer3(out)
+        # out = F.max_pool2d(out, 2)
+        out = F.max_pool2d(out, 2)
         out = self.layer4(out)
-        out = F.avg_pool2d(out, 4)
+        out = F.max_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
+        # print("---")
         return out
 
 
