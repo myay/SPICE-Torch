@@ -300,11 +300,30 @@ class QuantizedConv2d(nn.Conv2d):
 
                 if self.performance_mode is not None:
                     # print("performance mode 2d")
+                    # print("--")
+                    # print("weight shape folded", quantized_weight.shape)
+                    # print("--")
+                    # print("input shape folded", input.shape)
+                    # # print("weight shape", weight_b.shape)
+                    # print("input shape unfolded", input_b.shape)
+                    # print("h,w", h,w)
                     output_b = torch.zeros(input_b.shape[0], wm_row, im_col).cuda()
                     if self.mapping is not None:
                         # print("mapping in performance mode")
+                        # !!! TODO: preliminary hot fix, because ResNet reorganizes output tensors in a weird way
+                        # For example:
+                        # input shape folded: torch.Size([16, 64, 64, 64])
+                        # input shape unfolded: torch.Size([16, 576, 1024])
+                        # h,w: 64 64
+                        # output shape of output_torch: folded torch.Size([16, 128, 32, 32])
+                        # This may not work together well when training with the mapping
+                        output_torch = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+                        # print("cuda_shape", output_b.shape)
+                        # print("torch_shape", output_torch.shape)
                         custommac2dmappingdirect.custommac2dmappingdirect(input_b, weight_b, output_b, self.mapping, self.array_size)
-                        output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                        # output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                        output_b = output_b.view(output_torch.shape)
+                        # print("output shape folded", output_torch.shape)
                         output_b = output_b.detach()
 
                     if self.mapping_distr is not None:

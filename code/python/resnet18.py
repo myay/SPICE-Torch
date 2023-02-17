@@ -32,14 +32,18 @@ class BasicBlock(nn.Module):
             error_model=error_model, bias=False, train_model=train_model, extract_absfreq=extract_absfreq)
         self.bn1 = nn.BatchNorm2d(planes)
         self.conv2 = QuantizedConv2d(planes, planes, kernel_size=3,
-                               stride=1, padding=1, quantization=quantMethod, bias=False)
+                               stride=1, padding=1, quantization=quantMethod, an_sim=an_sim, array_size=array_size, mac_mapping=mapping, mac_mapping_distr=mapping_distr, sorted_mac_mapping_idx=sorted_mapping_idx,
+                               performance_mode=performance_mode,
+                               error_model=error_model, bias=False, train_model=train_model, extract_absfreq=extract_absfreq)
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != self.expansion*planes:
             self.shortcut = nn.Sequential(
                 QuantizedConv2d(in_planes, self.expansion*planes,
-                          kernel_size=1, stride=stride, quantization=quantMethod, bias=False),
+                          kernel_size=1, stride=stride, quantization=quantMethod, an_sim=an_sim, array_size=array_size, mac_mapping=mapping, mac_mapping_distr=mapping_distr, sorted_mac_mapping_idx=sorted_mapping_idx,
+                          performance_mode=performance_mode,
+                          error_model=error_model, bias=False, train_model=train_model, extract_absfreq=extract_absfreq),
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
