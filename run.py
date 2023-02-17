@@ -23,7 +23,7 @@ from Utils import set_layer_mode, parse_args, dump_exp_data, create_exp_folder, 
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
-from Models import FC, VGG3, VGG7
+from Models import FC, VGG3, VGG7, ResNet, BasicBlock
 
 from Traintest_Utils import train, test, test_error, Clippy, Criterion, binary_hingeloss
 
@@ -31,7 +31,7 @@ import binarizePM1
 import binarizePM1FI
 import quantization
 
-from resnet18 import ResNet, BasicBlock
+# from resnet18 import ResNet, BasicBlock
 
 class SymmetricBitErrorsBinarizedPM1:
     def __init__(self, method, p):

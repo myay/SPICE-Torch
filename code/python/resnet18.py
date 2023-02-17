@@ -9,16 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
-import binarizePM1
-
-class Quantization1:
-    def __init__(self, method):
-        self.method = method
-    def applyQuantization(self, input):
-        return self.method(input)
-
-binarizepm1 = Quantization1(binarizePM1.binarize)
-
+c
 class BasicBlock(nn.Module):
     expansion = 1
 
@@ -109,14 +100,3 @@ class ResNet(nn.Module):
         out = self.linear(out)
         # print("---")
         return out
-
-
-def ResNet18():
-    return ResNet(BasicBlock, [2, 2, 2, 2])
-
-def test():
-    net = ResNet18().cuda()
-    y = net(torch.randn(1, 3, 32, 32).cuda())
-    # print(y.size())
-
-# test()

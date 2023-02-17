@@ -9,8 +9,7 @@ import json
 
 from QuantizedNN import QuantizedLinear, QuantizedConv2d, QuantizedActivation
 
-from Models import FC, VGG3, VGG7
-from resnet18 import ResNet, BasicBlock
+from Models import FC, VGG3, VGG7, ResNet, BasicBlock
 
 def get_model_and_datasets(args):
     nn_model = None
