@@ -384,7 +384,9 @@ class QuantizedConv2d(nn.Conv2d):
 
                     output_b = torch.sum(output_b, 3)
                     # create the view that PyTorch expects
-                    output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                    output_torch = F.conv2d(input, quantized_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+                    # output_b = output_b.view(input_b.shape[0], wm_row, h, w)
+                    output_b = output_b.view(output_torch.shape)
                     output_b = output_b.detach()
 
                     # execute standard way, to create computation graph for backprop
