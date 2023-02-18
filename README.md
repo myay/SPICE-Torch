@@ -8,8 +8,8 @@ Tested setups:
 - Python 3.9.7, PyTorch 1.9.0, GeForce GTX 3080 10GB (Driver Version: 512.15, CUDA Version: 11.6)
 
 Supported features:
-- BNN models for FC, VGG3, VGG7
-- Datasets: FashionMNIST, KMNIST, SVHN, CIFAR10
+- BNN models for FC, VGG3, VGG7, ResNet18
+- Datasets: FashionMNIST, KMNIST, SVHN, CIFAR10, IMAGENETTE
 - Error model application for Linear and Conv2d layers (direct mapping and distribution-based mapping)
 - Variable crossbar array size
 - Training with error models
@@ -18,7 +18,7 @@ Supported features:
 TODOs:
 - Optimize MAC engine for execution time
 - Support for QNNs
-- Larger NN models
+- More NN models
 
 ## CUDA-based Error Model Application and Binarization/Quantization
 
@@ -35,8 +35,8 @@ After successful installation of all kernels, run the binarization/quantization-
 Here is a list of the command line parameters for running the error evaluations with SPICE-Torch:
 | Command line parameter | Options |
 | :------------- |:-------------|
-| --model      | FC, VGG3, VGG7 |
-| --dataset      | MNIST, FMNIST, QMNIST, SVHN, CIFAR10 |
+| --model      | FC, VGG3, VGG7, ResNet |
+| --dataset      | MNIST, FMNIST, QMNIST, SVHN, CIFAR10, IMAGENETTE |
 | --an-sim      | int, whether to turn on the mapping from SPICE, default: None |
 | --mapping      | string, loads a direct mapping from the specified path, default: None |
 | --mapping-distr      | string, loads a distribution-based mapping from the specified path, default: None |
@@ -58,6 +58,7 @@ Here is a list of the command line parameters for running the error evaluations 
 | --gpu-num | int, specifies the GPU on which the training should be performed, default: 0 |
 | --profile-time | int, Specify whether to profile the execution time by specifying the repetitions, default: None |
 | --extract-absfreq | int, Specify whether to extract the absolute frequency of MAC values, default: None |
+| --extract-absfreq-resnet | int, Specify whether to extract the absolute frequency of MAC values for resnet, default: None |
 
 More information on the command line parameters can be found [here](https://github.com/myay/IFneuronSPICE/blob/main/code/python/Utils.py#L55).
 

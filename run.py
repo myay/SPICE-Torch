@@ -235,7 +235,66 @@ def main():
             times_list.append(profiled)
         print_tikz_data(times_list)
 
+    # Resnet absfreq extraction is different from VGG
+    if args.extract_absfreq_resnet is not None:
+        ####
+        # abs freq test resnet
+        print(model)
+        # print("--")
+        # print((model.layer1[1]))
+        # iterate through resnet structure to access conv and linear layer data
+        for block in model.children():
+            # print("BLOCK---", block)
+            if isinstance(block, (QuantizedLinear)):
+                print("--h_l", block)
+                block.absfreq = torch.zeros(args.array_size+1, dtype=int).cuda()
+            if isinstance(block, nn.Sequential):
+                for layer in block.children():
+                    # print("--LAYER", layer)
+                    print("--new block")
+                    for inst in layer.children():
+                        if isinstance(inst, (QuantizedLinear, QuantizedConv2d)):
+                            print("--INST", inst)
+                            inst.absfreq = torch.zeros(args.array_size+1, dtype=int).cuda()
+                        if isinstance(inst, nn.Sequential):
+                            for shortcut_stuff in inst.children():
+                                if isinstance(shortcut_stuff, (QuantizedLinear, QuantizedConv2d)):
+                                    print("--shortcut", shortcut_stuff)
+                                    shortcut_stuff.absfreq = torch.zeros(args.array_size+1, dtype=int).cuda()
+
+        # run train set
+        test(model, device, train_loader)
+        accumulated_counts_np = np.zeros(args.array_size+1, dtype=int)
+        # iterate again trough resnet structure and accumulare the counts
+        for block in model.children():
+            # print("BLOCK---", block)
+            if isinstance(block, (QuantizedLinear)):
+                # print("--h_l", block)
+                accumulated_counts_np += block.absfreq.cpu().numpy()
+            if isinstance(block, nn.Sequential):
+                for layer in block.children():
+                    # print("--LAYER", layer)
+                    # print("--new block")
+                    for inst in layer.children():
+                        if isinstance(inst, (QuantizedLinear, QuantizedConv2d)):
+                            # print("--INST", inst)
+                            accumulated_counts_np += inst.absfreq.cpu().numpy()
+                        if isinstance(inst, nn.Sequential):
+                            for shortcut_stuff in inst.children():
+                                if isinstance(shortcut_stuff, (QuantizedLinear, QuantizedConv2d)):
+                                    # print("--shortcut", shortcut_stuff)
+                                    accumulated_counts_np += shortcut_stuff.absfreq.cpu().numpy()
+        # store accumulated counts to file and create pdf                            
+        with open('accumulated_counts_{}.npy'.format(args.dataset), 'wb') as mp:
+            np.save(mp, accumulated_counts_np)
+        print("accumulated", accumulated_counts_np)
+        bins_np_all = np.array([i for i in range(0,args.array_size+1)])
+        plt.bar(bins_np_all, accumulated_counts_np, color ='black', width = 0.5)
+        plt.savefig("abs_freq_accumualted_{}.pdf".format(args.dataset), format="pdf")
+        plt.clf()
+
     if args.extract_absfreq is not None:
+        # return
         # reset all stored data
         for layer in model.children():
             if isinstance(layer, (QuantizedLinear, QuantizedConv2d)):

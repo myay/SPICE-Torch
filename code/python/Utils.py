@@ -152,6 +152,8 @@ def parse_args(parser):
     parser.add_argument('--print-accuracy', type=int, default=None, help='Specify whether to print inference accuracy')
     parser.add_argument('--profile-time', type=int, default=None, help='Specify whether to profile the execution time by specifying the repetitions')
     parser.add_argument('--extract-absfreq', type=int, default=None, help='Specify whether to extract the absolute frequencies of MAC values')
+    parser.add_argument('--extract-absfreq-resnet', type=int, default=None, help='Specify whether to extract the absolute frequencies of MAC values for ResNet')
+
 
 
 def dump_exp_data(model, args, all_accuracies):
