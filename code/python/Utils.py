@@ -104,6 +104,7 @@ def get_model_and_datasets(args):
 
         dataset1 = datasets.ImageFolder('data/imagenette2/train', transform=transform_train)
         dataset2 = datasets.ImageFolder('data/imagenette2/val', transform=transform_test)
+    return nn_model, dataset1, dataset2    
 
 def set_layer_mode(model, mode):
     for layer in model.children():
