@@ -6,6 +6,7 @@ Tested setups:
 - Python 3.6.9, PyTorch 1.5.0, GeForce GTX 1060 6GB (Driver Version: 440.100, CUDA Version: 10.2), Ubuntu 18.04.4
 - Python 3.6.13 (conda), 1.7.0+cu110, GeForce GTX 1080 8GB (Driver Version: 450.102.04, CUDA Version: 11.0), Ubuntu 18.04.6
 - Python 3.9.7, PyTorch 1.9.0, GeForce GTX 3080 10GB (Driver Version: 512.15, CUDA Version: 11.6)
+- Python 3.10.6, PyTorch 2.01+cu118. GeForce RTX 3060 12 GB (Driver Version: , CUDA Version: 11.71), Windows 10
 
 Supported features:
 - BNN models for FC, VGG3, VGG7, ResNet18
